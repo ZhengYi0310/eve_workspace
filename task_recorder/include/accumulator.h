@@ -30,7 +30,7 @@ namespace task_recorder
             
             
             Accumulator() : initialized_(false), num_data_traces_(0); num_samples(0) {};
-            virtual ~Accumulator() P;
+            virtual ~Accumulator();
 
             /*!
              * @param num_data_traces
