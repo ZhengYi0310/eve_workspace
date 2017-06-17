@@ -1,0 +1,62 @@
+<launch>
+  <!-- Launch several pieces of barrett hardware -->
+
+  <arg name="CONFIG_LEFT" default="/etc/barrett/default.conf"/>
+  <arg name="BUS_LEFT" default="/etc/barrett/default.conf"/>
+
+  <!-- Config / Bus -->
+  <param name="barrett/busses/rtcan_left/config" value="$(arg CONFIG_LEFT)"/>
+  <param name="barrett/busses/rtcan_left/bus" value="$(arg BUS_LEFT)"/>
+
+  <!-- Products -->
+  <rosparam ns="barrett">
+    product_names:
+    -  "wam_left"
+    #- "bhand_left"
+    products:
+      wam_left:
+        bus: "rtcan_left"
+        type: "wam"
+        tip_joint: "left_wam/palm_yaw_joint"
+      bhand_left:
+        bus: "rtcan_left"
+        type: "hand"
+        tactile: false
+  </rosparam>
+
+  <!-- Launch several pieces of barrett hardware -->
+
+  <!-- WAM Server -->
+  <node pkg="barrett_hw" type="wam_server" name="wam_server" output="screen"/> 
+
+  <!-- WAM Parameters -->
+  <include ns="barrett" file="$(find barrett_model)/launch/xacrodisplay.launch"/>
+  
+  <arg name="rvizconfig" default="$(find barrett_model)/urdf.rviz" />
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+      <rosparam param="/source_list">[/joint_states]</rosparam>
+      <remap from="robot_description" to="barrett/robot_description_yi" /> 
+  </node>
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher">
+      <remap from ="joint_states" to="/joint_states" />
+      <remap from="robot_description" to="barrett/robot_description_yi" /> 
+  </node> 
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true"> 
+      <remap from="robot_description" to="barrett/robot_description_yi" /> 
+  </node>
+
+
+  <param name="barrett/can_dev_name" value="rtcan0"/>
+
+  <!-- Controllers -->
+  <rosparam ns="barrett">
+    joint_state_controller:
+      type: joint_state_controller/JointStateController
+      publish_rate: 100
+  </rosparam>
+
+  <!-- Start these controllers by default -->
+  <node name="default_controller_spawner"
+    pkg="controller_manager" type="spawner" output="screen"
+    args="barrett/joint_state_controller"/>
+</launch>
