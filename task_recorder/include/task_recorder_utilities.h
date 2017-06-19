@@ -274,7 +274,70 @@ namespace task_recorder
         return true;
     }
 
+    template<typename MessageType>
+    inline bool crop(std::vector<MessageType>& messages, const ros::Time& start_time, const ros::Time& end_time)
+    {
+        // remove messages before start_time
+        int initial_index = 0;
+        bool found_limit = false;
+        for (int i = 0; i < static_cast<int>(messages.size()) && !found_limit; i++)
+        {
+            if (messages[i].header.stamp < start_time)
+            {
+                initial_index = i;
+            }
+            else 
+            {
+                found_limit = true;
+            }
+        }
 
-    
+        ROS_VERIFY(found_limit);
+        messages.erase(messages.begin(), messages.begin() + initial_index);
+        
+        // remove messages after end_time 
+        int final_index = static_cast<int>(messages.size());
+        found_limit = false;
+        for (int i = static_cast<int>(messages.size()) - 1; i >=0 && !found_limit; i--)
+        {
+            if (messages[i].header.stamp > end_time)
+            {
+                final_index = i;
+            }
+            else 
+            {
+                found_limit = true;
+            }
+        }
+        ROS_VERIFY(found_limit);
+        messages.erase(messages.begin() + final_index, messages.end());
+        return true;
+    }
+
+    template<typename MessageType>
+    inline bool computeMeanDtAndInputVector(const std::vector<MessageType>& messages, double& mean_dt, std::vector<double>& input_vector)
+    {
+        int num_messages = static_cast<int>messages.size();
+        if (num_messages < 2)
+        {
+            ROS_ERROR("There should be at least 2 messages, but there are only %i.", num_messages);
+            return false;
+        }
+
+        // compute mean dt of the provided time stamps 
+        double dts[num_messages - 1];
+        mean_dt = 0..0;
+        input_vector.clear();
+        input_vector.resize(num_messages);
+        input_vector[0] = messages[0].header.stamp.toSec();
+        for (int i = 0; i < num_messages - 1; i++)
+        {
+            dts[i] = messages[i + 1].header.stamp.toSec() - messages[i].header.stamp.toSec();
+            mean_dt += dts[i];
+            input_vector[i + 1] = input_vector[i] + dts[i];
+        }
+        mean_dt /= static_cast<double>(num_messages - 1);
+        return true;
+    }    
 }
 #endif

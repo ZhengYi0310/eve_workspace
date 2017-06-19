@@ -377,7 +377,7 @@ namespace barrett_hw
         }
 
         // Set the torques 
-        (device->Wam->getLowLevelWam()).setTorques(device->joint_effort_cmds);
+        //(device->Wam->getLowLevelWam()).setTorques(device->joint_effort_cmds);
 
         //*******************
         // Stuff to do about calibration 
