@@ -61,5 +61,220 @@ namespace task_recorder
         }
         return true;
     }
+
+    inline std::string getPathNameIncludingTrailingSlash(const boost::filesystem::path &path)
+    {
+        std::string path_string = path.string();
+        usc_utilities::appendTrailingSlash(path_string);
+        return path_string;
+    }
+
+    inline std::string getTrialCounterFileName(const boost::filesystem::path& path, const std::string& topic_name)
+    {
+        std::string Name = topic_name;
+        ROS_VERIFY(getTopicName(name));
+        return getPathNameIncludingTrailingSlash(path) + name + TRIAL_FILE_NAME;
+    }
+
+    inline bool createTrialCounterFile(const boost::filesystem::path& path, const int trial_count, const std::string& topic_name)
+    {
+        std::ofstream trial_counter_file(getTrialCounterFileName(path, topic_name).c_str(), std::ofstream::out);
+        if(trial_counter_file.is_open())
+        {
+            trial_counter_file << trial_count << std::endl;
+            trial_counter_file.close();
+        }
+        else 
+        {
+            ROS_ERROR_STREAM("Could not open the trial file" << TRIAL_FILE_NAME << ": " << std::strerror(errno));
+        }
+        return true;
+    }
+
+    inline bool readTrialCounterFile(const boost::filesystem::path& path, const int& trial_count, const std::string& topic_name)
+    {
+        std::ifstream trial_counter_file(getTrialCounterFileName(path, topic).c_str(), std::ifstream::in);
+        if (trial_counter_file.is_open())
+        {
+            if (!trial_counter_file >> trial_count)
+            {
+                ROS_ERROR("Could not read content %s since it is not an integer.", getTrialCounterFileName(path, topic).c_str());
+                return false;
+            }
+        }
+        else 
+        {
+            ROS_ERROR("Could not open %s.", getTrialCounterFileName(path, topic_name).c_str());
+            return false;
+        }
+        return true;
+    }
+
+    inline bool incrementTrialCounterFile(const boost::filesystem::path& path, const std::string& topic_name)
+    {
+        int trial_count;
+        if(!readTrialCounterFile(path, trial_count, topic_name))
+        {
+            return false;
+        }
+        trial_count++;
+        if(!createTrialCounterFile(path, trial_count,topic_name))
+        {
+            return false;
+        }
+        return true;
+    }
+
+    inline bool getTrialId(const boost::filesystem::path& path, int& trial_id, const std::string& topic_name)
+    {
+        if (!boost::filesystem::exists(path))
+        {
+            ROS_ERROR("path >>%s<< doesn't exist!", path.string().c_str());
+            return false; 
+        }
+
+        std::string absolute_trial_file_name = getTrialCounterFileName(path, topic_name);
+        if (!boost::filesystem::exists(absolute_trial_file_name))
+        {
+            if createTrialCounterFile(path, 0, topic_name)
+            {
+                return false;
+            }
+        }
+
+        if (!readTrialCounterFile(path, trial_id, topic_name))
+        {
+            return false;
+        }
+        return true;
+    }
+
+    inline std::string getDataFileName(const std::string& topic_name, const int trial)
+    {
+        std::string file_name = topic_name;
+        ROS_VERIFY(getTopicName(file_name));
+        usc_utilities::removeLeadingSlash(file_name);
+        return file_name + FILE_NAME_ID_SEPERATPR + FILE_NAME_DATA_TRUNK + getString(trial) + BAG_FILE_APPENDIX;
+    }
+
+    inline std::string getStatFileName(const std::string& topic_name, const int trial)
+    {
+        std::string file_name = topic_name;
+        ROS_VERIFY(getTopicName(file_name));
+        usc_utilities::removeLeadingSlash(file_name);
+        return file_name + FILE_NAME_ID_SEPERATPR + FILE_NAME_STATISTICS_TRUNK + getString(trial) + BAG_FILE_APPENDIX'
+    }
+
+    inline bool getTrialId(const std::string& file_name, int& trial_id, const std::string& topic_name)
+    {
+        std::string name = topic_name;
+        ROS_VERIFY(getTopicName(name));
+
+        size_t topic_name_pos = file_name.find(name);
+        if (topic_name_pos != std::string::npos)
+        {
+            size_t id_seperator_pos, bag_appendix_pos;
+            id_seperator_pos = file_name.find_last_of(FILE_NAME_ID_SEPERATPR);
+            bag_appendix_pos = file_name.find_last_of(BAG_FILE_APPENDIX);
+            if ((id_seperator_pos != std::string::npos) && (bag_appendix_pos != std::string::npos))
+            {
+                size_t start = id_seperator_pos + FILE_NAME_ID_SEPERATPR.length();
+                size_t length = file_name.length() - start - BAG_FILE_APPENDIX.length();
+                std::string trial_string = file_name.substr(start, length);
+                try 
+                {
+                    trial_id = boost::lexical_cast<int>(trial_string);
+                    return true;
+                }
+                catch (boost::bad_lexical_cast const&)
+                {
+                    ROS_ERROR("Could not conver >>%s<< into an integer.", trial_string.c_str());
+                    return false;
+                }
+            }
+            else 
+            {
+                size_t counter_prefix_pos = file_name.find(TRIAL_FILE_NAME_APPENDIX);
+                if (counter_prefix_pos == std::string::npos)
+                {
+                    ROS_ERROR("Invalid file name: %s", file_name.c_str());
+                }
+                return false;
+            }
+        }
+        else 
+        {
+            ROS_ERROR("File name >>%s<< doesn't include topic >>%s<<", file_name.c_str(), name.c_str());
+            return false;
+        }
+
+    }
+
+    inline bool checkForCompleteness(const boost::filesystem::path& path, const int trial_counts, const std::string& topic_name)
+    {
+        int current_trial_id = 0;
+        std::map<int, int> trial_ids;
+
+        boost::filesystem::directory_iterator end_itr; // default contructor yields past-the-end 
+        for (boost::filesystem::directory_iterator it(path); it != end_itr; it++)
+        {
+            if (getTrialId(itr->path().filename(), current_trial_id, topic_name))
+            {
+                trial_ids.insert(std::map<int, int>(current_trial_id, current_trial_id));
+            }
+        }
+
+        std::map<int, int>::iterator it;
+        int id_counter = 0;
+        int key_counter = 0;
+        for (it = trial_ids.begin(); it != trial_ids.end(); it++)
+        {
+            id_counter = it->second;
+            if (id_counter != key_counter)
+            {
+                ROS_ERROR("Data does not seem to be complete, id %i is missing!", key_counter);
+            }
+            key_counter++;
+        }
+        if (key_counter != trial_counts)
+        {
+            ROS_ERROR("Data does not seem to be complete, there are %i files and the trial counter is at %i.", key_counter, trial_counts);
+            return false;
+        }
+
+        return true;
+    }
+
+    template<typename MessageType>
+    inline bool removeDuplicates(std::vector<MessageType>& messages)
+    {
+        std::vector<int> indexes;
+        if (messages[0].header.stamp < ros::TIME_MIN)
+        {
+            ROS_WARN("Found message (0) with invalid stamp.");
+            indexes.push_back(0);
+        }
+
+        for (int i = 0; i < static_cast<int>(messages.size() - 1); i++)
+        {
+            if ((messages[i + 1].header.stamp.toSec() - messages[i].header.stamp.toSec()) < 1e-6)
+            {
+                indexes.push_back(i + 1);
+            }
+            else if (messages[i + 1].header.stamp < ros::TIME_MIN)
+            {
+                indexes.push_back(i + 1);
+            }
+        }
+
+        for (std::vector<int>::reverse_iterator rit = indexes.rbegin(); rit != indexes.rend(); rit++)
+        {
+            messages.erase(messages.begin() + *rit);
+        }
+        return true;
+    }
+
+
+    
 }
 #endif
