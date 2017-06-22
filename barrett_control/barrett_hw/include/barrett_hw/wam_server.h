@@ -58,6 +58,7 @@ namespace barrett_hw
     class BarrettHW : public hardware_interface::RobotHW
     {
         public:
+            EIGEN_MAKE_ALIGNED_OPERATOR_NEW
             BarrettHW(ros::NodeHandle nh);
             bool configure();
             bool start();
@@ -103,6 +104,8 @@ namespace barrett_hw
                 boost::shared_ptr<barrett::systems::KinematicsBase<DOF> > kinematicsBase;
                 boost::shared_ptr<barrett::systems::GravityCompensator<DOF> > gravityCompensator;
                 boost::shared_ptr<barrett::systems::Summer<jt_type, 3> > jtSum;
+
+                boost::shared_ptr<barrett::systems::PIDController<jv_type, jt_type> > jvController1; //For now, define this just in order to get joint velocities 
                 //boost::shared_ptr<barrett::systems::Wam<DOF> > Wam;
                 //barrett::LowLevelWam<DOF>& interface;
                 

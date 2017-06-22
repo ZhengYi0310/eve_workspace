@@ -153,12 +153,15 @@ namespace barrett_hw
         wam_device->kinematicsBase.reset(new barrett::systems::KinematicsBase<DOF>(wam_config["kinematics"]));
         wam_device->gravityCompensator.reset(new barrett::systems::GravityCompensator<DOF>(wam_config["gravity_compensation"]));
         wam_device->jtSum.reset(new barrett::systems::Summer<jt_type, 3>(true));
+        wam_device->jvController1.reset(new barrett::systems::PIDController<jv_type, jt_type>(wam_config["joint_velocity_control"][0]));
 
         // make connections between systems 
         barrett::systems::connect(wam_device->Wam->jpOutput, wam_device->jpController->feedbackInput);
         barrett::systems::connect(wam_device->Wam->jpOutput, wam_device->kinematicsBase->jpInput);
         barrett::systems::connect(wam_device->Wam->jvOutput, wam_device->jvFilter->input);
         barrett::systems::connect(wam_device->jvFilter->output, wam_device->kinematicsBase->jvInput);
+        
+        barrett::systems::connect(wam_device->jvFilter->output, wam_device->jvController1->feedbackInput); // connect this for now just in order to get joint velocities;
 
         //*************** Don't connect gravity compensator ouput yet, wait for later
         barrett::systems::connect(wam_device->kinematicsBase->kinOutput, wam_device->gravityCompensator->kinInput);
@@ -366,7 +369,22 @@ namespace barrett_hw
         //Eigen::Matrix<double, DOF, 1> 
         const jp_type raw_positions = (device->Wam->getLowLevelWam()).getJointPositions();
         //Eigen::Matrix<double, DOF, 1> 
-        const jv_type raw_velocities = (device->Wam->getLowLevelWam()).getJointVelocities();
+        jv_type raw_velocities;
+
+        {
+            BARRETT_SCOPED_LOCK(device->Wam->getEmMutex());
+            {
+                // Return filtered velocity, if avaiable.
+                if ((device->jvController1->feedbackInput).valueDefined())
+                {
+                    raw_velocities = (device->jvController1->feedbackInput).getValue();
+                }
+                else 
+                {
+                    raw_velocities = (device->Wam->getLowLevelWam()).getJointVelocities();
+                }
+            }
+        }
 
         // Smooth velocity 
         // TODO: parameterrize time constant 
