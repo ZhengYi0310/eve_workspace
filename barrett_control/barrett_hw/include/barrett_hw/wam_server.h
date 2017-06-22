@@ -87,15 +87,23 @@ namespace barrett_hw
                 Eigen::Vector4i calibrated_joints;
             };
 
+            
+            enum {JT_INPUT = 0, GRAVITY_INPUT, SC_INPUT};
             // State structure for a Wam arm 
             // This provides storage for the joint handles
             template<size_t DOF>
             struct WamDevice
             {
+                BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
                 //  Systems Wam and its Low-level Wam interface 
                 //boost::shared_ptr<barrett::systems::Wam<DOF> > Wam;
-                //boost::shared_ptr<barrett::LowLevelWam<DOF> >interface;
-                boost::shared_ptr<barrett::systems::Wam<DOF> > Wam;
+                boost::shared_ptr<barrett::systems::LowLevelWamWrapper<DOF> > Wam;
+                boost::shared_ptr<barrett::systems::PIDController<jp_type, jt_type> > jpController;
+                boost::shared_ptr<barrett::systems::FirstOrderFilter<jv_type> > jvFilter;
+                boost::shared_ptr<barrett::systems::KinematicsBase<DOF> > kinematicsBase;
+                boost::shared_ptr<barrett::systems::GravityCompensator<DOF> > gravityCompensator;
+                boost::shared_ptr<barrett::systems::Summer<jt_type, 3> > jtSum;
+                //boost::shared_ptr<barrett::systems::Wam<DOF> > Wam;
                 //barrett::LowLevelWam<DOF>& interface;
                 
                 // Configuration 

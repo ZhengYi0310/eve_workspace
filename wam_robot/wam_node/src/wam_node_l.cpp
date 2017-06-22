@@ -591,11 +591,11 @@ template<size_t DOF>
       jp_type jp_init = wam.getJointPositions();
       jp_init[3] -= 0.35;
       usleep(500000);
-      wam.moveTo(jp_init);
+      //wam.moveTo(jp_init);
 
       usleep(500000);
-      //hand->initialize();
-      //hand->update();
+      hand->initialize();
+      hand->update();
 
       //Publishing the following topics only if there is a BarrettHand present
       bhand_joint_state_pub = nh_.advertise < sensor_msgs::JointState > ("joint_states_r", 1); // bhand/joint_states

@@ -134,6 +134,10 @@ namespace barrett_hw
         
         //Declare Barrett template units 
         BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
+        
+        // Give us pretty stack traces when things die
+        barrett::installExceptionHandler();
+
         // Construct a new wam device (interface and state storage)
         boost::shared_ptr<BarrettHW::WamDevice<DOF> > wam_device(new BarrettHW::WamDevice<DOF>());
 
@@ -142,14 +146,42 @@ namespace barrett_hw
         std::vector<barrett::Puck*> wamPucks = barrett_manager->getWamPucks();
         wamPucks.resize(DOF); // Dicard all but the first DOF elements 
 
-        // Construct a Wam 
-        wam_device->Wam.reset(new barrett::systems::Wam<DOF>(barrett_manager->getExecutionManager(), wamPucks, barrett_manager->getSafetyModule(), wam_config));
-        barrett_manager->startExecutionManager();
+        // Construct a Wam or a LowLevelWamWrapper 
+        wam_device->Wam.reset(new barrett::systems::LowLevelWamWrapper<DOF>(barrett_manager->getExecutionManager(), wamPucks, barrett_manager->getSafetyModule(), wam_config["low_level"]));
+        wam_device->jpController.reset(new barrett::systems::PIDController<jp_type, jt_type>(wam_config["joint_position_control"]));
+        wam_device->jvFilter.reset(new barrett::systems::FirstOrderFilter<jv_type>(wam_config["joint_velocity_filter"]));
+        wam_device->kinematicsBase.reset(new barrett::systems::KinematicsBase<DOF>(wam_config["kinematics"]));
+        wam_device->gravityCompensator.reset(new barrett::systems::GravityCompensator<DOF>(wam_config["gravity_compensation"]));
+        wam_device->jtSum.reset(new barrett::systems::Summer<jt_type, 3>(true));
+
+        // make connections between systems 
+        barrett::systems::connect(wam_device->Wam->jpOutput, wam_device->jpController->feedbackInput);
+        barrett::systems::connect(wam_device->Wam->jpOutput, wam_device->kinematicsBase->jpInput);
+        barrett::systems::connect(wam_device->Wam->jvOutput, wam_device->jvFilter->input);
+        barrett::systems::connect(wam_device->jvFilter->output, wam_device->kinematicsBase->jvInput);
+
+        //*************** Don't connect gravity compensator ouput yet, wait for later
+        barrett::systems::connect(wam_device->kinematicsBase->kinOutput, wam_device->gravityCompensator->kinInput);
+        //***************
+        if (barrett_manager->getExecutionManager() != NULL)
+        {
+            // Keep the jvFilter updated so it will provide accurate values for
+            // calls to getJointVelocities().
+            barrett_manager->getExecutionManager()->startManaging(*(wam_device->jvFilter));
+        }
+
+        barrett::systems::connect(wam_device->jpController->controlOutput, wam_device->jtSum->getInput(SC_INPUT));
+        barrett::systems::connect(wam_device->jtSum->output, wam_device->Wam->input);
+
+        // initially, tie inputs together for zero torque 
+        barrett::systems::connect(wam_device->Wam->jpOutput, wam_device->jpController->referenceInput);
+
+        barrett_manager->getExecutionManager()->start();
 
         // Wait for Shift-Activate 
         // Check rapidly in case the user wants to perform some action (like
 		// enabling gravity compensation) immediately after Shift-activate.
-        barrett_manager->getSafetyModule()->waitForMode(barrett::SafetyModule::ACTIVE, true, 0.05);
+        barrett_manager->getSafetyModule()->waitForMode(barrett::SafetyModule::ACTIVE);
         
 
         //&(wam_device->interface) = &(wam_device->Wam->getLowLevelWam());
@@ -213,7 +245,7 @@ namespace barrett_hw
         barrett_manager->getExecutionManager()->startManaging(ramp); //starting ramp manager
 
         ROS_INFO("%zu-DOF WAM Left.", DOF);
-        jp_type jp_home = wam_device->Wam->getJointPositions();
+        //jp_type jp_home = wam_device->Wam->getJointPositions();
 
         if (barrett_manager->foundHand()) //Does the following only if a BarrettHand is found 
         {
@@ -224,10 +256,10 @@ namespace barrett_hw
             barrett_manager->getSafetyModule()->setTorqueLimit(3.0);
 
             // Move j3 in order to give room for hand initialization 
-            jp_type jp_init = wam_device->Wam->getJointPositions();
-            jp_init[3] -= 0.35;
+            //jp_type jp_init = wam_device->Wam->getJointPositions();
+            //jp_init[3] -= 0.35;
             usleep(500000);
-            wam_device->Wam->moveTo(jp_init);
+            //wam_device->Wam->moveTo(jp_init);
 
             usleep(500000);
             hand_device->interface->initialize();
@@ -239,7 +271,9 @@ namespace barrett_hw
             wam_device->hand_device = hand_device;
         }
 
-        wam_device->Wam->gravityCompensate(true);
+        //Compensate the gravity here
+        barrett::systems::forceConnect(wam_device->gravityCompensator->output, wam_device->jtSum->getInput(GRAVITY_INPUT));
+
 
         return wam_device;
     }
@@ -377,7 +411,10 @@ namespace barrett_hw
         }
 
         // Set the torques 
-        (device->Wam->getLowLevelWam()).setTorques(device->joint_effort_cmds);
+        //(device->Wam->getLowLevelWam()).setTorques(device->joint_effort_cmds);
+        //
+        // reconnect the jpController 
+        
 
         //*******************
         // Stuff to do about calibration 
