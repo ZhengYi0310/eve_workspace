@@ -39,6 +39,7 @@
 #include <barrett/systems/wam.h>
 
 #include <barrett_model/semi_absolute_joint_interface.h>
+#include <barrett_model/biotac_finger_interface.h>
 
 #include <terse_roscpp/param.h>
 
