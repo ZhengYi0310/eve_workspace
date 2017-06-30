@@ -227,6 +227,8 @@ namespace barrett_hw
 
             std::string config_path_;
 
+            bool tactile_sensors_exist_;
+
         protected:
 
             template<size_t DOF>

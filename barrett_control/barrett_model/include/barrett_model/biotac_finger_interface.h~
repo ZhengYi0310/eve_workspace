@@ -72,9 +72,7 @@ namespace barrett_model
                 electrode_data_ = electrode_data;
             }
 
-            std::string getName() const {return bt_serial_;}
-			
-			std::string getBtSerial() const {return bt_serial_;}
+            std::string getBtSerial() const {return bt_serial_;}
         
             unsigned int getBtPosition() const {assert(bt_position_); return *bt_position_;}
             unsigned int getTDCData() const {assert(tdc_data_); return *tdc_data_;}

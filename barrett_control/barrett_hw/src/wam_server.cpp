@@ -114,6 +114,12 @@ namespace barrett_hw
         this->registerInterface(&effort_interface_);
         this->registerInterface(&semi_absolute_interface_);
 
+        // Register biotac state interface 
+        if (tactile_sensors_exist_)
+        {
+            this->registerInterface(&biotac_fingers_interface_);
+        }
+
         // Set the configured flag 
         configured_ = true;
 
@@ -274,11 +280,10 @@ namespace barrett_hw
             wam_device->hand_device = hand_device;
         }
     
-        bool tactile_sensors_exist;
-        param::require(product_nh, "tactile", tactile_sensors_exist, "Whether biotac sensors exist and need to be initialized.");
+        param::require(product_nh, "tactile", tactile_sensors_exist_, "Whether biotac sensors exist and need to be initialized.");
 
         //only bringup the biotacs when "tactile is set to true"
-        if (tactile_sensors_exist)
+        if (tactile_sensors_exist_)
         {
             //boost::shared_ptr<BarrettHW::BioTacDevices> biotac_devices(new BarrettHW::BioTacDevices());
             wam_device->biotac_devices.reset(new BarrettHW::BioTacDevices());
@@ -299,7 +304,9 @@ namespace barrett_hw
                                                                                   &((wam_device->biotac_devices->pdc_data_vec)[i]),
                                                                                   &((wam_device->biotac_devices->pac_data_array)[i]),
                                                                                   &((wam_device->biotac_devices->electrode_data_array)[i]));
+                biotac_fingers_interface_.registerHandle(biotac_finger_state_handle);
 
+                ROS_INFO("Create and register handle for the >%i th< biotac sensor, with serial number >%s<, on cheetah position >%i<", i, (wam_device->biotac_devices->bt_serial_vec)[i].c_str(), (wam_device->biotac_devices->bt_position_vec)[i]);
             }
             
         }
