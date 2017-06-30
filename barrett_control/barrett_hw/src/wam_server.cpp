@@ -273,6 +273,37 @@ namespace barrett_hw
 
             wam_device->hand_device = hand_device;
         }
+    
+        bool tactile_sensors_exist;
+        param::require(product_nh, "tactile", tactile_sensors_exist, "Whether biotac sensors exist and need to be initialized.");
+
+        //only bringup the biotacs when "tactile is set to true"
+        if (tactile_sensors_exist)
+        {
+            //boost::shared_ptr<BarrettHW::BioTacDevices> biotac_devices(new BarrettHW::BioTacDevices());
+            wam_device->biotac_devices.reset(new BarrettHW::BioTacDevices());
+            wam_device->biotac_devices->interface.reset(new biotac::BioTacHandClass("left_hand_biotacs"));
+            wam_device->biotac_devices->interface->initBioTacSensors();
+
+            ROS_INFO("Register the biotac sensors hardware handles...");
+            wam_device->biotac_devices->bt_hand_msg = wam_device->biotac_devices->interface->collectBatch();
+            wam_device->biotac_devices->assign_value();
+            
+            
+            for (int i = 0; i < (int)(wam_device->biotac_devices->bt_hand_msg).bt_data.size(); i++)
+            {
+                barrett_model::BiotacFingerStateHandle biotac_finger_state_handle((wam_device->biotac_devices->bt_serial_vec)[i],
+                                                                                  &((wam_device->biotac_devices->bt_position_vec)[i]),
+                                                                                  &((wam_device->biotac_devices->tdc_data_vec)[i]),
+                                                                                  &((wam_device->biotac_devices->tac_data_vec)[i]),
+                                                                                  &((wam_device->biotac_devices->pdc_data_vec)[i]),
+                                                                                  &((wam_device->biotac_devices->pac_data_array)[i]),
+                                                                                  &((wam_device->biotac_devices->electrode_data_array)[i]));
+
+            }
+            
+        }
+        
 
         //Compensate the gravity here
         barrett::systems::forceConnect(wam_device->gravityCompensator->output, wam_device->jtSum->getInput(GRAVITY_INPUT));
@@ -364,6 +395,8 @@ namespace barrett_hw
                 throw;
             }
         }
+
+        
 
         // Get raw state 
         //Eigen::Matrix<double, DOF, 1> 

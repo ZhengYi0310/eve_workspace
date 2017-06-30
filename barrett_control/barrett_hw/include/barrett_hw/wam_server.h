@@ -41,11 +41,16 @@
 #include <barrett_model/semi_absolute_joint_interface.h>
 #include <barrett_model/biotac_finger_interface.h>
 
+#include <biotac_sensors/biotac_hand_class.h>
+#include <biotac_sensors/BioTacHand.h>
+
 #include <terse_roscpp/param.h>
 
 #include <urdf/model.h>
 
 #include <stdexcept>
+
+//#include <usc_utilities/assert.h>
 
 bool g_quit = false;
 
@@ -73,6 +78,57 @@ namespace barrett_hw
 
             void set_mode(barrett::SafetyModule::SafetyMode mode);
 
+            // State structure for the BioTacHand 
+            struct BioTacDevices 
+            {
+                boost::shared_ptr<biotac::BioTacHandClass> interface;
+                biotac_sensors::BioTacHand bt_hand_msg;
+
+                std::vector<std::string> bt_serial_vec;
+                std::vector<unsigned int> bt_position_vec;
+                std::vector<unsigned int> tdc_data_vec;
+                std::vector<unsigned int> tac_data_vec;
+                std::vector<unsigned int> pdc_data_vec;
+                std::vector<std::vector<size_t> > pac_data_array;
+                std::vector<std::vector<size_t> > electrode_data_array;
+
+                void reset()
+                {
+                    std::fill(bt_serial_vec.begin(), bt_serial_vec.end(), "");
+                    
+                    std::fill(bt_position_vec.begin(), bt_position_vec.end(), 0);
+                    std::fill(tdc_data_vec.begin(), tdc_data_vec.end(), 0);
+                    std::fill(tac_data_vec.begin(), tac_data_vec.end(), 0);
+                    std::fill(pdc_data_vec.begin(), pdc_data_vec.end(), 0);
+                    
+                    for (size_t i = 0; i < pac_data_array.size(); i++)
+                    {
+                        std::fill(pac_data_array[i].begin(), pac_data_array[i].end(), 0);
+                    }
+
+                    for (size_t i = 0; i < electrode_data_array.size(); i++)
+                    {
+                        std::fill(electrode_data_array[i].begin(), electrode_data_array[i].end(), 0);
+                    }
+                    
+                    ROS_INFO("Every filed for the BioTacDevices structure is reset!");
+                }
+
+                void assign_value()
+                {
+                    for (size_t i = 0; i < bt_hand_msg.bt_data.size(); i++)
+                    {
+                        bt_serial_vec.push_back(bt_hand_msg.bt_data[i].bt_serial);
+                        bt_position_vec.push_back(bt_hand_msg.bt_data[i].bt_position);
+                        tdc_data_vec.push_back(bt_hand_msg.bt_data[i].tdc_data);
+                        tac_data_vec.push_back(bt_hand_msg.bt_data[i].tac_data);
+                        pdc_data_vec.push_back(bt_hand_msg.bt_data[i].pdc_data);
+
+                        pac_data_array[i].assign(bt_hand_msg.bt_data[i].pac_data.begin(), bt_hand_msg.bt_data[i].pac_data.end());
+                        electrode_data_array[i].assign(bt_hand_msg.bt_data[i].electrode_data.begin(), bt_hand_msg.bt_data[i].electrode_data.end());
+                    }
+                }
+            };
 
             // State structure for the hand 
             struct HandDevice
@@ -129,8 +185,9 @@ namespace barrett_hw
                     calibration_burn_offsets.setZero();
                 }
 
-                //***********8
+                //***********
                 boost::shared_ptr<HandDevice> hand_device;
+                boost::shared_ptr<BioTacDevices> biotac_devices;
             };
             
 
@@ -157,6 +214,7 @@ namespace barrett_hw
             hardware_interface::EffortJointInterface effort_interface_;
             hardware_interface::VelocityJointInterface velocity_interface_;
             barrett_model::SemiAbsoluteJointInterface semi_absolute_interface_;
+            barrett_model::BiotacFingerStateInterface biotac_fingers_interface_;
 
             // Vectors of various barrett structures 
             ManagerMap barrett_managers_;
