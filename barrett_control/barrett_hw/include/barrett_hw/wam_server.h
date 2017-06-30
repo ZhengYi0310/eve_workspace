@@ -187,7 +187,9 @@ namespace barrett_hw
 
                 //***********
                 boost::shared_ptr<HandDevice> hand_device;
-                boost::shared_ptr<BioTacDevices> biotac_devices;
+                //boost::shared_ptr<BioTacDevices> biotac_devices;
+
+                //bool tactile_sensors_exist;
             };
             
 
@@ -221,6 +223,10 @@ namespace barrett_hw
             Wam4Map wam4s_;
             Wam7Map wam7s_;
             HandMap hands_;
+
+            // biotac sensor devices structure 
+            // TODO what to do if there are more than 1 cheetah ?
+            boost::shared_ptr<BioTacDevices> biotac_devices_;
 
             //barrett::jp_type jp_home;
             barrett::systems::Ramp ramp;
