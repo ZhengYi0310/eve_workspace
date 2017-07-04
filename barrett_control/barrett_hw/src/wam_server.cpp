@@ -109,11 +109,12 @@ namespace barrett_hw
                     biotac_devices_->interface.reset(new biotac::BioTacHandClass("left_hand_biotacs"));
                     biotac_devices_->interface->initBioTacSensors();
 
-                    ROS_INFO("Register the biotac sensors hardware handles...");
+                    ROS_INFO("Collect the first batch and assign biotac values ...");
                     biotac_devices_->bt_hand_msg = biotac_devices_->interface->collectBatch();
                     biotac_devices_->assign_value();
+                    ROS_INFO("Register biotac state handles for the biotac hardware interface.");
             
-            
+                     
                     for (int i = 0; i < (int)(biotac_devices_->bt_hand_msg).bt_data.size(); i++)
                     {
                         barrett_model::BiotacFingerStateHandle biotac_finger_state_handle((biotac_devices_->bt_serial_vec)[i],
@@ -125,8 +126,9 @@ namespace barrett_hw
                                                                                   &((biotac_devices_->electrode_data_array)[i]));
                         biotac_fingers_interface_.registerHandle(biotac_finger_state_handle);
 
-                        ROS_INFO("Create and register handle for the >%i th< biotac sensor, with serial number >%s<, on cheetah position >%i<", i, (biotac_devices_->bt_serial_vec)[i].c_str(), (biotac_devices_->bt_position_vec)[i]);
+                        ROS_INFO("Create and register handle for the >%i th< biotac sensor, with serial number >%s<, on cheetah position >%i<", (i + 1), (biotac_devices_->bt_serial_vec)[i].c_str(), (biotac_devices_->bt_position_vec)[i]);
                     }
+                    
             
                 }
                 //ROS_ERROR_STREAM("Look ma, no hands!");
@@ -143,11 +145,13 @@ namespace barrett_hw
         this->registerInterface(&effort_interface_);
         this->registerInterface(&semi_absolute_interface_);
 
+        /*
         // Register biotac state interface 
         if (tactile_sensors_exist_)
         {
             this->registerInterface(&biotac_fingers_interface_);
         }
+        */
 
         // Set the configured flag 
         configured_ = true;
@@ -325,12 +329,14 @@ namespace barrett_hw
             ROS_ERROR("Barrett hardware must be configured before it can be started.");
             return false;
         }
-
+        
+        /*
         // Reset all biotac sensor states 
         if (tactile_sensors_exist_)
         {
             biotac_devices_->reset();
         }
+        */
 
         // Zero the state 
         for (Wam4Map::iterator it = wam4s_.begin(); it != wam4s_.end(); it++)
@@ -370,8 +376,8 @@ namespace barrett_hw
 
         // Collect biotac batch data from each cheetah 
         // TODO what if there are more than one cheetah device ?
-        biotac_devices_->bt_hand_msg = biotac_devices_->interface->collectBatch();
-        biotac_devices_->assign_value();
+        //biotac_devices_->bt_hand_msg = biotac_devices_->interface->collectBatch();
+        //biotac_devices_->assign_value();
 
         return true;
     }

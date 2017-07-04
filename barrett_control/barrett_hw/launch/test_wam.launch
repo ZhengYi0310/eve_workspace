@@ -12,7 +12,7 @@
   <rosparam ns="barrett">
     product_names:
     -  "wam_left"
-    #- "bhand_left"
+    - "bhand_left"
     products:
       wam_left:
         bus: "rtcan_left"
@@ -21,7 +21,7 @@
       bhand_left:
         bus: "rtcan_left"
         type: "hand"
-        tactile: false
+        tactile: true
   </rosparam>
 
   <!-- Launch several pieces of barrett hardware -->

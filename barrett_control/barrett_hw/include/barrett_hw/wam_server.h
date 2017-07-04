@@ -115,18 +115,26 @@ namespace barrett_hw
                 }
 
                 void assign_value()
-                {
+                {   
+                    
                     for (size_t i = 0; i < bt_hand_msg.bt_data.size(); i++)
                     {
+
                         bt_serial_vec.push_back(bt_hand_msg.bt_data[i].bt_serial);
                         bt_position_vec.push_back(bt_hand_msg.bt_data[i].bt_position);
                         tdc_data_vec.push_back(bt_hand_msg.bt_data[i].tdc_data);
                         tac_data_vec.push_back(bt_hand_msg.bt_data[i].tac_data);
                         pdc_data_vec.push_back(bt_hand_msg.bt_data[i].pdc_data);
+                        
+                        std::vector<size_t> temp_pac;
+                        temp_pac.assign(bt_hand_msg.bt_data[i].pac_data.begin(), bt_hand_msg.bt_data[i].pac_data.end());
+                        pac_data_array.push_back(temp_pac);
 
-                        pac_data_array[i].assign(bt_hand_msg.bt_data[i].pac_data.begin(), bt_hand_msg.bt_data[i].pac_data.end());
-                        electrode_data_array[i].assign(bt_hand_msg.bt_data[i].electrode_data.begin(), bt_hand_msg.bt_data[i].electrode_data.end());
+                        std::vector<size_t> temp_elec;
+                        temp_elec.assign(bt_hand_msg.bt_data[i].electrode_data.begin(), bt_hand_msg.bt_data[i].electrode_data.end());
+                        electrode_data_array.push_back(temp_elec);
                     }
+                    
                 }
             };
 
