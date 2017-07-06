@@ -226,8 +226,7 @@ namespace barrett_hw
         // Wait for Shift-Activate 
         // Check rapidly in case the user wants to perform some action (like
 		// enabling gravity compensation) immediately after Shift-activate.
-        barrett_manager->getSafetyModule()->waitForMode(barrett::SafetyModule::ACTIVE);
-        
+        barrett_manager->getSafetyModule()->waitForMode(barrett::SafetyModule::ACTIVE);        
 
         //&(wam_device->interface) = &(wam_device->Wam->getLowLevelWam());
         //***********************
@@ -296,10 +295,6 @@ namespace barrett_hw
         {
             boost::shared_ptr<BarrettHW::HandDevice> hand_device(new BarrettHW::HandDevice());       
             hand_device->interface = barrett_manager->getHand();
-            
-            // Asjust the torque limits for BarrentHands movements at extents 
-            barrett_manager->getSafetyModule()->setTorqueLimit(3.0);
-
             // Move j3 in order to give room for hand initialization 
             //jp_type jp_init = wam_device->Wam->getJointPositions();
             //jp_init[3] -= 0.35;
@@ -315,11 +310,10 @@ namespace barrett_hw
 
             wam_device->hand_device = hand_device;
         }
- 
+
         //Compensate the gravity here
-        barrett::systems::forceConnect(wam_device->gravityCompensator->output, wam_device->jtSum->getInput(GRAVITY_INPUT));
-
-
+        barrett::systems::forceConnect(wam_device->gravityCompensator->output, wam_device->jtSum->getInput(GRAVITY_INPUT));        
+  
         return wam_device;
     }
 
@@ -400,7 +394,8 @@ namespace barrett_hw
     template <size_t DOF>
     bool BarrettHW::read_wam(const ros::Time time, const ros::Duration period, boost::shared_ptr<BarrettHW::WamDevice<DOF> > device)
     {
-        BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);        
+        BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);    
+        /*
         // Poll the hardware
         try 
         {
@@ -419,6 +414,7 @@ namespace barrett_hw
                 throw;
             }
         }
+        */
 
         // Get raw state 
         //Eigen::Matrix<double, DOF, 1> 
@@ -453,6 +449,7 @@ namespace barrett_hw
         {
             device->joint_positions(i) = raw_positions(i);
         }
+       
         
         // Read resolver angles 
         std::vector<barrett::Puck*> pucks = (device->Wam->getLowLevelWam()).getPucks();
@@ -460,6 +457,7 @@ namespace barrett_hw
         {
             device->resolver_angles(i) = pucks[i]->getProperty(barrett::Puck::MECH);
         }
+        
          
         return true;
     }
