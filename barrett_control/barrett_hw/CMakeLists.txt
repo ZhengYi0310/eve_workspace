@@ -5,7 +5,7 @@ project(barrett_hw)
 # TODO: remove all from COMPONENTS that are not catkin packages.
 find_package(catkin COMPONENTS hardware_interface  
   barrett_model kdl_urdf_tools terse_roscpp controller_manager biotac_sensors
-  control_toolbox rospy xenomai_ros)
+  control_toolbox rospy xenomai_ros realtime_tools pluginlib)
 
 find_package(barrett)
 
@@ -28,7 +28,7 @@ if(Xenomai_FOUND)
   # Add xenomai flags
   add_xenomai_flags()
 
-  #add_library(barrett_hw src/wam.cpp include/barrett_hw/wam.h)
+  add_library(biotac_state_controller src/biotac_state_controller.cpp )
 
   #add_definitions(-D__XENO__)
   add_executable(wam_server src/wam_server_copy.cpp)
@@ -44,7 +44,7 @@ if(Xenomai_FOUND)
   ## INCLUDE_DIRS: 
   ## LIBRARIES: libraries you create in this project that dependent projects also need
   catkin_package(
-      DEPENDS hardware_interface barrett barrett_model kdl_urdf_tools terse_roscpp controller_manager control_toolbox rospy biotac_sensors 
+      DEPENDS hardware_interface barrett barrett_model kdl_urdf_tools terse_roscpp controller_manager control_toolbox rospy biotac_sensors realtime_tools pluginlib
       CATKIN_DEPENDS # TODO
       INCLUDE_DIRS # TODO include
       LIBRARIES # TODO
