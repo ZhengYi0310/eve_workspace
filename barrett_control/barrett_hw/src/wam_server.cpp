@@ -193,6 +193,7 @@ namespace barrett_hw
         wam_device->gravityCompensator.reset(new barrett::systems::GravityCompensator<DOF>(wam_config["gravity_compensation"]));
         wam_device->jtSum.reset(new barrett::systems::Summer<jt_type, 3>(true));
         wam_device->jvController1.reset(new barrett::systems::PIDController<jv_type, jt_type>(wam_config["joint_velocity_control"][0]));
+        wam_device->ExposedOutput.reset(new barrett::systems::ExposedOutput<jt_type>(Eigen::Matrix<double, DOF, 1>::Zero()));
 
         // make connections between systems 
         barrett::systems::connect(wam_device->Wam->jpOutput, wam_device->jpController->feedbackInput);
@@ -212,12 +213,14 @@ namespace barrett_hw
             barrett_manager->getExecutionManager()->startManaging(*(wam_device->jvFilter));
         }
 
+        barrett::systems::connect(wam_device->ExposedOutput->output, wam_device->jtSum->getInput(JT_INPUT));
         barrett::systems::connect(wam_device->jpController->controlOutput, wam_device->jtSum->getInput(SC_INPUT));
         barrett::systems::connect(wam_device->jtSum->output, wam_device->Wam->input);
 
         // initially, tie inputs together for zero torque 
         barrett::systems::connect(wam_device->Wam->jpOutput, wam_device->jpController->referenceInput);
 
+        // start the 500 hz loop
         barrett_manager->getExecutionManager()->start();
 
         // Wait for Shift-Activate 
@@ -312,8 +315,7 @@ namespace barrett_hw
 
             wam_device->hand_device = hand_device;
         }
-     
-
+ 
         //Compensate the gravity here
         barrett::systems::forceConnect(wam_device->gravityCompensator->output, wam_device->jtSum->getInput(GRAVITY_INPUT));
 
@@ -330,13 +332,12 @@ namespace barrett_hw
             return false;
         }
         
-        /*
         // Reset all biotac sensor states 
         if (tactile_sensors_exist_)
         {
             biotac_devices_->reset();
         }
-        */
+        
 
         // Zero the state 
         for (Wam4Map::iterator it = wam4s_.begin(); it != wam4s_.end(); it++)
@@ -364,6 +365,7 @@ namespace barrett_hw
 
     bool BarrettHW::read(const ros::Time time, const ros::Duration period)
     {
+        
         // Iterate over all deives 
         for (Wam4Map::iterator it = wam4s_.begin(); it != wam4s_.end(); it++)
         {
@@ -378,7 +380,7 @@ namespace barrett_hw
         // TODO what if there are more than one cheetah device ?
         //biotac_devices_->bt_hand_msg = biotac_devices_->interface->collectBatch();
         //biotac_devices_->assign_value();
-
+        
         return true;
     }
 
@@ -418,8 +420,6 @@ namespace barrett_hw
             }
         }
 
-        
-
         // Get raw state 
         //Eigen::Matrix<double, DOF, 1> 
         const jp_type raw_positions = (device->Wam->getLowLevelWam()).getJointPositions();
@@ -440,28 +440,27 @@ namespace barrett_hw
                 }
             }
         }
-
+        
         // Smooth velocity 
-        // TODO: parameterrize time constant 
+        // TODO: parameterrize time constant
         for (size_t i = 0; i < DOF; i++)
         {
             device->joint_velocities(i) = filters::exponentialSmoothing(raw_velocities(i), device->joint_velocities(i), 0.8);
         }
-
+        
         // Store position 
-        //device->joint_positions = raw_positions;
         for (size_t i = 0; i < DOF; i++)
         {
             device->joint_positions(i) = raw_positions(i);
         }
-
+        
         // Read resolver angles 
         std::vector<barrett::Puck*> pucks = (device->Wam->getLowLevelWam()).getPucks();
         for (size_t i = 0; i < pucks.size(); i++)
         {
             device->resolver_angles(i) = pucks[i]->getProperty(barrett::Puck::MECH);
         }
-
+         
         return true;
     }
 
@@ -470,7 +469,9 @@ namespace barrett_hw
     {
         BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);
         
-        //static int warning = 0;
+        //first disconnect the Exposed system and jtSum 
+        barrett::systems::disconnect(device->jtSum->getInput(JT_INPUT));
+        
 
         for (size_t i = 0; i < DOF; i++)
         {
@@ -483,15 +484,13 @@ namespace barrett_hw
             }
         }
 
-        // Set the torques 
-        //(device->Wam->getLowLevelWam()).setTorques(device->joint_effort_cmds);
-        //
-        // reconnect the jpController 
-        
+        // Set the value of the ExposedOutput and reconnect them 
+        barrett::systems::connect(device->ExposedOutput->output, device->jtSum->getInput(JT_INPUT)); 
 
-        //*******************
-        // Stuff to do about calibration 
-        //******************* 
+        /*****************************
+        // Don't use setTorques in another realtime thread ever!!!!!!!!!!!
+        device->Wam->getLowLevelWam().setTorques(device->joint_effort_cmds);
+        ******************************/
     }
 
     bool BarrettHW::wait_for_mode(barrett::SafetyModule::SafetyMode mode, ros::Duration timeout, ros::Duration poll_duration)
@@ -525,7 +524,7 @@ int main (int argc, char** argv)
     // Set up real time task 
     mlockall(MCL_CURRENT | MCL_FUTURE);
     RT_TASK task;
-    rt_task_shadow(&task, "GroupWAM", 99, 0);
+    rt_task_shadow(&task, "GroupWAM", 49, 0); // lower than the 500hz loop 
 
     // initialize ROS 
     ros::init(argc, argv, "wam_server", ros::init_options::NoSigintHandler);
@@ -591,7 +590,8 @@ int main (int argc, char** argv)
 
     uint32_t count = 0;
 
-    //Run as fast as possible 
+    //Run as fast as possible
+    rt_task_set_periodic(NULL, TM_NOW, static_cast<RTIME>(0.002 * 1e9));
     while (!g_quit)
     {
         // Get the time / period 
@@ -607,20 +607,27 @@ int main (int argc, char** argv)
             ROS_FATAL("Failed to poll realtime clock!");
             break;
         }
-
+        
+         
         // Read the state from the WAM 
         if (!barrett_robot.read(now, period))
         {
             g_quit = true;
             break;
         }
-
+        
+        
+        
         // update the controllers 
         manager.update(now, period);
 
+        
         // Write the command to the WAM 
         barrett_robot.write(now, period);
+        
 
+        //std::cout << count << std::endl;
+        
         if (count++ > 1000)
         {
             if (publisher.trylock())
@@ -631,6 +638,7 @@ int main (int argc, char** argv)
 
             }
         }
+        
     }
 
     publisher.stop();

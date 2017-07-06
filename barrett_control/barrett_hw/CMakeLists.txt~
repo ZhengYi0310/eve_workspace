@@ -5,7 +5,7 @@ project(barrett_hw)
 # TODO: remove all from COMPONENTS that are not catkin packages.
 find_package(catkin COMPONENTS hardware_interface  
   barrett_model kdl_urdf_tools terse_roscpp controller_manager biotac_sensors
-  control_toolbox rospy xenomai_ros usc_utilities)
+  control_toolbox rospy xenomai_ros)
 
 find_package(barrett)
 
@@ -41,7 +41,7 @@ if(Xenomai_FOUND)
   ## INCLUDE_DIRS: 
   ## LIBRARIES: libraries you create in this project that dependent projects also need
   catkin_package(
-      DEPENDS hardware_interface barrett barrett_model kdl_urdf_tools terse_roscpp controller_manager control_toolbox rospy biotac_sensors usc_utilities
+      DEPENDS hardware_interface barrett barrett_model kdl_urdf_tools terse_roscpp controller_manager control_toolbox rospy biotac_sensors 
       CATKIN_DEPENDS # TODO
       INCLUDE_DIRS # TODO include
       LIBRARIES # TODO

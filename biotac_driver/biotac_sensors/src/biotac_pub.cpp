@@ -49,7 +49,7 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "biotac_sensors_pub", ros::init_options::AnonymousName);
   ros::NodeHandle n;
   //Loop at 100Hz
-  ros::Rate loop_rate(100);
+  ros::Rate loop_rate(200);
   //Advertise on "biotac_pub" topic
   ros::Publisher biotac_pub = n.advertise<biotac_sensors::BioTacHand>("biotac_pub", 1000);
   //Create a blank message to publish

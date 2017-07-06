@@ -111,7 +111,7 @@ namespace barrett_hw
                         std::fill(electrode_data_array[i].begin(), electrode_data_array[i].end(), 0);
                     }
                     
-                    ROS_INFO("Every filed for the BioTacDevices structure is reset!");
+                    ROS_INFO("Every field for the BioTacDevices structure is reset!");
                 }
 
                 void assign_value()
@@ -169,6 +169,7 @@ namespace barrett_hw
                 boost::shared_ptr<barrett::systems::KinematicsBase<DOF> > kinematicsBase;
                 boost::shared_ptr<barrett::systems::GravityCompensator<DOF> > gravityCompensator;
                 boost::shared_ptr<barrett::systems::Summer<jt_type, 3> > jtSum;
+                boost::shared_ptr<barrett::systems::ExposedOutput<jt_type> > ExposedOutput;
 
                 boost::shared_ptr<barrett::systems::PIDController<jv_type, jt_type> > jvController1; //For now, define this just in order to get joint velocities 
                 //boost::shared_ptr<barrett::systems::Wam<DOF> > Wam;

@@ -78,7 +78,7 @@ int main(int argc, char** argv)
 
     while(ros::ok())
     { //Collect a batch of data
-      //bt_hand_msg = left_hand.collectBatch();
+      bt_hand_msg = left_hand.collectBatch();
       biotac_pub.publish(bt_hand_msg);
       loop_rate.sleep();
     }

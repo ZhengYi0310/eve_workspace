@@ -34,6 +34,9 @@ if(Xenomai_FOUND)
   add_executable(wam_server src/wam_server.cpp)
   target_link_libraries(wam_server xenomai native rtdm ${BARRETT_LIBRARIES} ${catkin_LIBRARIES})
 
+  add_executable(wam_server_ll src/wam_server_ll.cpp)
+  target_link_libraries(wam_server_ll xenomai native rtdm ${BARRETT_LIBRARIES} ${catkin_LIBRARIES})
+
   ## Generate added messages and services with any dependencies listed here
   # TODO: fill in what other packages will need to use this package
   ## DEPENDS: system dependencies of this project that dependent projects also need
