@@ -395,7 +395,7 @@ namespace barrett_hw
     bool BarrettHW::read_wam(const ros::Time time, const ros::Duration period, boost::shared_ptr<BarrettHW::WamDevice<DOF> > device)
     {
         BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);    
-        /*
+        
         // Poll the hardware
         try 
         {
@@ -414,7 +414,7 @@ namespace barrett_hw
                 throw;
             }
         }
-        */
+
 
         // Get raw state 
         //Eigen::Matrix<double, DOF, 1> 
@@ -450,7 +450,6 @@ namespace barrett_hw
             device->joint_positions(i) = raw_positions(i);
         }
        
-       
         /*
         // Read resolver angles 
         std::vector<barrett::Puck*> pucks = (device->Wam->getLowLevelWam()).getPucks();
@@ -459,6 +458,7 @@ namespace barrett_hw
             device->resolver_angles(i) = pucks[i]->getProperty(barrett::Puck::MECH);
         }
         */
+        
          
         return true;
     }
@@ -508,7 +508,8 @@ namespace barrett_hw
 
         return (ros::Time::now() - polling_start_time < timeout);
     }
-
+    
+    
     void BarrettHW::set_mode(barrett::SafetyModule::SafetyMode mode)
     {
         for (ManagerMap::iterator it = barrett_managers_.begin(); it != barrett_managers_.end(); it++)
@@ -516,15 +517,13 @@ namespace barrett_hw
             it->second->getSafetyModule()->setMode(mode);
         }
     }
+    
 }
 
 int main (int argc, char** argv)
 {
     // Set up real time task 
     mlockall(MCL_CURRENT | MCL_FUTURE);
-    //RT_TASK task;
-    //rt_task_shadow(&task, "GroupWAM", 49, 0); // lower than the 500hz loop 
-    barrett::PeriodicLoopTimer loopTimer(0.004, 49);
 
     // initialize ROS 
     ros::init(argc, argv, "wam_server", ros::init_options::NoSigintHandler);
@@ -583,7 +582,10 @@ int main (int argc, char** argv)
 
         ros::Duration(1.0).sleep();
     }
-
+    
+    // Don't put this before ProductManager.startExecutionManager()
+    barrett::PeriodicLoopTimer loopTimer(0.0025, 49); // Set the priority lower than the 500hz thread 
+    
     // Construct the controller manager 
     ros::NodeHandle nh;
     controller_manager::ControllerManager manager(&barrett_robot, nh);
@@ -594,10 +596,8 @@ int main (int argc, char** argv)
     //rt_task_set_periodic(NULL, TM_NOW, static_cast<RTIME>(0.002 * 1e9));
     while (!g_quit)
     {
-        // Explicit interruption point 
-        boost::this_thread::interruption_point();
+        //boost::this_thread::interruption_point();
         loopTimer.wait();
-
         // Get the time / period 
         if (!clock_gettime(CLOCK_REALTIME, &ts))
         {
@@ -630,7 +630,7 @@ int main (int argc, char** argv)
         barrett_robot.write(now, period);
         
 
-        std::cout << count << std::endl;
+        //std::cout << count << std::endl;
         
         if (count++ > 1000)
         {

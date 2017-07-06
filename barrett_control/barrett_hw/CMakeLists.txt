@@ -31,7 +31,7 @@ if(Xenomai_FOUND)
   #add_library(barrett_hw src/wam.cpp include/barrett_hw/wam.h)
 
   #add_definitions(-D__XENO__)
-  add_executable(wam_server src/wam_server.cpp)
+  add_executable(wam_server src/wam_server_copy.cpp)
   target_link_libraries(wam_server xenomai native rtdm ${BARRETT_LIBRARIES} ${catkin_LIBRARIES})
 
   add_executable(wam_server_ll src/wam_server_ll.cpp)
