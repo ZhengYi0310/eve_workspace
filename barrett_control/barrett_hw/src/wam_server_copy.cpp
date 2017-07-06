@@ -15,7 +15,8 @@ namespace barrett_hw
       configured_(false),
       calibrated_(false),
       ramp(NULL, 0.03), // Default Cartesian Velocity
-      config_path_("") // Point to the default config path 
+      config_path_(""), // Point to the default config path 
+      joint_states_to_biotac_counter_(0)
     {
         //TODO: Determine pre-existing calibration from ROS param server
     }
@@ -145,13 +146,13 @@ namespace barrett_hw
         this->registerInterface(&effort_interface_);
         this->registerInterface(&semi_absolute_interface_);
 
-        /*
+        
         // Register biotac state interface 
         if (tactile_sensors_exist_)
         {
             this->registerInterface(&biotac_fingers_interface_);
         }
-        */
+        
 
         // Set the configured flag 
         configured_ = true;
@@ -372,8 +373,11 @@ namespace barrett_hw
 
         // Collect biotac batch data from each cheetah 
         // TODO what if there are more than one cheetah device ?
-        //biotac_devices_->bt_hand_msg = biotac_devices_->interface->collectBatch();
-        //biotac_devices_->assign_value();
+        if ((joint_states_to_biotac_counter_++) == 4) // Biotac can only collect data as fast as 100hz
+        {
+            biotac_devices_->bt_hand_msg = biotac_devices_->interface->collectBatch();
+            biotac_devices_->assign_value();
+        }
         
         return true;
     }
@@ -396,6 +400,7 @@ namespace barrett_hw
     {
         BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);    
         
+        //TODO think about this, do we need to update the hardware in the main thread ?
         // Poll the hardware
         try 
         {
@@ -414,6 +419,7 @@ namespace barrett_hw
                 throw;
             }
         }
+        
 
 
         // Get raw state 
@@ -471,7 +477,6 @@ namespace barrett_hw
         //first disconnect the Exposed system and jtSum 
         barrett::systems::disconnect(device->jtSum->getInput(JT_INPUT));
         
-
         for (size_t i = 0; i < DOF; i++)
         {
             if (std::abs(device->joint_effort_cmds(i)) > device->effort_limits(i))
@@ -484,6 +489,7 @@ namespace barrett_hw
         }
 
         // Set the value of the ExposedOutput and reconnect them 
+        device->ExposedOutput->setValue(device->joint_effort_cmds);
         barrett::systems::connect(device->ExposedOutput->output, device->jtSum->getInput(JT_INPUT)); 
 
         /*****************************

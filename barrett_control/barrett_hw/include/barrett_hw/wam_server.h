@@ -241,8 +241,8 @@ namespace barrett_hw
             barrett::systems::Ramp ramp;
 
             std::string config_path_;
-
             bool tactile_sensors_exist_;
+            size_t joint_states_to_biotac_counter_;
 
         protected:
 
