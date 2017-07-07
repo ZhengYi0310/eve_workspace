@@ -241,6 +241,7 @@ namespace barrett_hw
             // Configuration
             urdf::Model urdf_model_;        
             std::string urdf_str_;
+            std::string urdf_path_;
             KDL::Tree kdl_tree_;
             // ros_control interface 
             hardware_interface::JointStateInterface state_interface_;

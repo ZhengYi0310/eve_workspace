@@ -49,25 +49,13 @@ namespace barrett_hw
         std::vector<std::string> product_names;
 
         // Get The URDF Model of Wam 
-        std::string urdf_path;
         param::require(nh_, "robot_description_yi", urdf_str_, "The URDF for the Barrett Wam arm.");
-        param::require(nh_, "urdf_file_path", urdf_path, "The path to the Barrett Wam URDF file.");
-        //ROS_INFO("the urdf file path %s", urdf_path.c_str());
-        //ROS_INFO("the urdf string %s", urdf_str_.c_str());
+        param::require(nh_, "urdf_file_path", urdf_path_, "The path to the Barrett Wam URDF file.");
         
-        if (!urdf_model_.initFile(urdf_path))
+        if (!urdf_model_.initString(urdf_str_))
         {
             ROS_ERROR("Could note generate the urdf model for the robot");
         }
-        
-        /*
-        // Construct the kdl tree
-        KDL::Tree kdl_tree;
-        if (!kdl_parser::treeFromUrdfModel(urdf_model_, kdl_tree));
-        {
-            ROS_ERROR("Could not convert urdf into kdl tree.");
-        }
-        */
         
         // Load Product Related Parameters 
         param::require(nh_, "product_names", product_names, "The unique barrett product names.");
@@ -280,6 +268,11 @@ namespace barrett_hw
         param::require(product_nh, "tip_segment", tip_seg_name, "WAM tip link in URDF.");
         param::require(product_nh, "root_segment", root_seg_name, "WAM root link in URDF.");
         param::require(product_nh, "tip_joint", tip_joint_name, "WAM tip joint in URDF.");
+
+        if (!kdl_parser::treeFromUrdfModel(urdf_model_, kdl_tree_)) 
+        {
+            ROS_ERROR("Could not convert the urdf model into a KDL::Tree!");
+        }
         printLink(kdl_tree_.getRootSegment(), "");
 
         if (!kdl_tree_.getChain(root_seg_name, tip_seg_name, wam_device->kdl_chain_))
@@ -293,7 +286,7 @@ namespace barrett_hw
         }
         else 
         {
-            ROS_INFO_STREAM("The KDL Chain for this device has %i " << static_cast<int>(wam_device->kdl_chain_.getNrOfJoints()) << " joints!");
+            ROS_INFO_STREAM("The KDL Chain for this device has " << static_cast<int>(wam_device->kdl_chain_.getNrOfJoints()) << " joints!");
         }
         
         // Initialize all the KDL solvers and matrix         
@@ -595,16 +588,6 @@ namespace barrett_hw
     
 }
 
-/*
-void printLink(const KDL::SegmentMap::const_iterator& link, const std::string& prefix)
-{
-    cout << prefix << "- Segment " << GetTreeElementSegment(link->second).getName() << " has " << GetTreeElementChildren(link->second).size() << " children" << endl;
-    for (unsigned int i=0; i < GetTreeElementChildren(link->second).size(); i++)
-        printLink(GetTreeElementChildren(link->second)[i], prefix + "  ");
-}
-*/
-
-
 int main (int argc, char** argv)
 {
     
@@ -622,33 +605,7 @@ int main (int argc, char** argv)
     // Construct the wam structure 
     ros::NodeHandle barrett_nh("barrett");
     barrett_hw::BarrettHW barrett_robot(barrett_nh);
-    
-    using namespace terse_roscpp;
-    std::string urdf_str;
-    std::string urdf_path;
-    param::require(barrett_nh, "urdf_file_path", urdf_path, "The path to the Barrett Wam URDF file.");
-    param::require(barrett_nh, "robot_description_yi", urdf_str, "The URDF for the Barrett Wam arm.");
-    //ROS_INFO("the urdf file path %s", urdf_path.c_str());
-    //ROS_INFO("the urdf string %s", urdf_str.c_str());
-
-    urdf::Model robot_model;
-    if (!robot_model.initFile(urdf_path))
-    {cerr << "Could not generate robot model" << endl; return false;}
-
-    KDL::Tree my_tree;
-    if (!kdl_parser::treeFromUrdfModel(robot_model, my_tree)) 
-    {cerr << "Could not extract kdl tree" << endl; return false;}
-    /*
-    // walk through tree
-    cout << " ======================================" << endl;
-    cout << " Tree has " << my_tree.getNrOfSegments() << " link(s) and a root link" << endl;
-    cout << " ======================================" << endl;
-    KDL::SegmentMap::const_iterator root = my_tree.getRootSegment();
-    printLink(root, "");   
-    */
-    //assign the kdl tree and number of segments
-    barrett_robot.assignKDLTree(my_tree, my_tree.getNrOfSegments());
-      
+          
     // Timer variables 
     struct timespec ts = {0, 0};
 
@@ -722,7 +679,6 @@ int main (int argc, char** argv)
             ROS_FATAL("Failed to poll realtime clock!");
             break;
         }
-        
          
         // Read the state from the WAM 
         if (!barrett_robot.read(now, period))
@@ -731,17 +687,11 @@ int main (int argc, char** argv)
             break;
         }
         
-        
-        
         // update the controllers 
         manager.update(now, period);
 
-        
         // Write the command to the WAM 
         barrett_robot.write(now, period);
-        
-
-        //std::cout << count << std::endl;
         
         if (count++ > 1000)
         {
