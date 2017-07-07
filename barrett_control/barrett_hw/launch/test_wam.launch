@@ -10,6 +10,7 @@
 
   <!-- Products -->
   <rosparam ns="barrett">
+    urdf_file_path: /home/robot/yzheng_ws/src/barrett_control/barrett_model/robots/wam7_bhand.urdf
     product_names:
     -  "wam_left"
     - "bhand_left"
@@ -18,10 +19,11 @@
         bus: "rtcan_left"
         type: "wam"
         tip_joint: "left_wam/palm_yaw_joint"
+        root_joint: "left_wam/base_yaw_joint"
       bhand_left:
         bus: "rtcan_left"
         type: "hand"
-        tactile: true
+        tactile: false
   </rosparam>
 
   <!-- Launch several pieces of barrett hardware -->
@@ -32,7 +34,8 @@
   <include ns="barrett" file="$(find barrett_model)/launch/xacrodisplay.launch"/>
   
   <arg name="rvizconfig" default="$(find barrett_model)/urdf.rviz" /> 
-  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"> 
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+     <param name="/use_gui" value="true"/>  
      <rosparam param="/source_list">[/joint_states]</rosparam> 
      <remap from="robot_description" to="barrett/robot_description_yi" /> 
   </node> 

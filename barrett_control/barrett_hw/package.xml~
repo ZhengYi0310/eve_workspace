@@ -17,12 +17,16 @@
   <build_depend>hardware_interface</build_depend>
   <build_depend>barrett_model</build_depend> 
   <build_depend>kdl_urdf_tools</build_depend>
+  <build_depend>kdl_parser</build_depend>
   <build_depend>terse_roscpp</build_depend>
   <build_depend>controller_manager</build_depend>
   <build_depend>control_toolbox</build_depend>
   <build_depend>rospy</build_depend>
   <build_depend>xenomai_ros</build_depend> 
   <build_depend>biotac_sensors</build_depend> 
+  <build_depend>realtime_tools</build_depend> 
+  <build_depend>pluginlib</build_depend> 
+  <build_depend>orocos_kdl</build_depend>
   
 
   <run_depend>barrett</run_depend> 
@@ -35,6 +39,9 @@
   <run_depend>rospy</run_depend>
   <run_depend>xenomai_ros</run_depend> 
   <run_depend>biotac_sensors</run_depend> 
+  <run_depend>realtime_tools</run_depend> 
+  <run_depend>pluginlib</run_depend> 
+  <run_depend>orocos_kdl</run_depend>
   
   <!-- <test_depend>hardware_interface</test_depend> -->
   <!-- <test_depend>barrett_direct</test_depend> -->

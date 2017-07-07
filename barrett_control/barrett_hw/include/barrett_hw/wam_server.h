@@ -24,6 +24,16 @@
 #include <control_toolbox/pid.h>
 #include <std_msgs/Duration.h>
 
+#include <kdl_parser/kdl_parser.hpp>
+#include <kdl/chain.hpp>
+#include <kdl/frames.hpp>
+#include <kdl/tree.hpp>
+#include <kdl/chainfksolver.hpp>
+#include <kdl/chainjnttojacsolver.hpp>
+#include <kdl/chainfksolverpos_recursive.hpp>
+#include <kdl/chainfksolvervel_recursive.hpp>
+#include <kdl/kinfam_io.hpp>
+
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/joint_command_interface.h>
 
@@ -72,6 +82,9 @@ namespace barrett_hw
             void write(const ros::Time time, const ros::Duration period);
             void stop();
             void cleanup() {}
+            bool assignKDLTree(KDL::Tree, size_t num_of_segments);
+            void printLink(const KDL::SegmentMap::const_iterator& link, const std::string& prefix);
+            
 
             // Wait for all devices to become available
             bool wait_for_mode(barrett::SafetyModule::SafetyMode mode, ros::Duration timeout = ros::Duration(60, 0), ros::Duration poll_duration = ros::Duration(0.1));
@@ -196,9 +209,17 @@ namespace barrett_hw
 
                 //***********
                 boost::shared_ptr<HandDevice> hand_device;
-                //boost::shared_ptr<BioTacDevices> biotac_devices;
+                
+                // stuff for pose and twist
+                KDL::Jacobian kdl_chain_jacobian_;
+                KDL::Chain kdl_chain_;
+                boost::shared_ptr<KDL::ChainFkSolverPos> jnt_to_pose_solver_;
+                boost::shared_ptr<KDL::ChainFkSolverVel_recursive> jnt_to_twist_solver_;
+                boost::shared_ptr<KDL::ChainJntToJacSolver> jnt_to_jac_solver_;
+                KDL::JntArray kdl_current_joint_positions_;
+                KDL::JntArray kdl_current_joint_velocities_;
 
-                //bool tactile_sensors_exist;
+
             };
             
 
@@ -218,8 +239,9 @@ namespace barrett_hw
             bool calibrated_;
 
             // Configuration
-            urdf::Model urdf_model_;
-
+            urdf::Model urdf_model_;        
+            std::string urdf_str_;
+            KDL::Tree kdl_tree_;
             // ros_control interface 
             hardware_interface::JointStateInterface state_interface_;
             hardware_interface::EffortJointInterface effort_interface_;

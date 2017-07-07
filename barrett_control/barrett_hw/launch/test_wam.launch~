@@ -10,14 +10,16 @@
 
   <!-- Products -->
   <rosparam ns="barrett">
+    urdf_file_path: /home/robot/yzheng_ws/src/barrett_control/barrett_model/robots/wam7_bhand.urdf
     product_names:
     -  "wam_left"
-    #- "bhand_left"
+    - "bhand_left"
     products:
       wam_left:
         bus: "rtcan_left"
         type: "wam"
         tip_joint: "left_wam/palm_yaw_joint"
+        root_joint: "left_wam/base_yaw_joint"
       bhand_left:
         bus: "rtcan_left"
         type: "hand"
