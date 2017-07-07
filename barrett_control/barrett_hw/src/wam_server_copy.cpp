@@ -480,8 +480,6 @@ namespace barrett_hw
             }
         }
         
-
-
         // Get raw state 
         //Eigen::Matrix<double, DOF, 1> 
         const jp_type raw_positions = (device->Wam->getLowLevelWam()).getJointPositions();
@@ -508,16 +506,28 @@ namespace barrett_hw
         for (size_t i = 0; i < DOF; i++)
         {
             device->joint_velocities(i) = filters::exponentialSmoothing(raw_velocities(i), device->joint_velocities(i), 0.8);
-            //device->kdl_current_joint_velocities_(i) = device->joint_velocities(i);
+            device->kdl_current_joint_velocities_.qdot(i) = device->joint_velocities(i);
         }
         
         // Store position 
         for (size_t i = 0; i < DOF; i++)
         {
             device->joint_positions(i) = raw_positions(i);
-            //device->kdl_current_joint_positions_(i) = raw_positions(i);
+            device->kdl_current_joint_velocities_.q(i) = raw_positions(i);
+            device->kdl_current_joint_positions_(i) = raw_positions(i);
         }
-       
+
+        // Get the jacobian 
+        device->jnt_to_jac_solver_->JntToJac(device->kdl_current_joint_positions_, device->kdl_chain_jacobian_);
+        ROS_INFO_STREAM("the jacabian has " << device->kdl_chain_jacobian_.data.rows() << " cartesian dimensions!");
+        ROS_INFO_STREAM("the jacobian has " << device->kdl_chain_jacobian_.data.cols() << " joint dimensions!");
+
+        // Get the cartesian pose 
+        device->jnt_to_pose_solver_->JntToCart(device->kdl_current_joint_positions_, device->kdl_pose_measured_);
+
+        // Get the cartesian velocti
+        device->jnt_to_twist_solver_->JntToCart(device->kdl_current_joint_velocities_, device->frame_vel_measured_);
+        device->kdl_twist_measured_ = device->frame_vel_measured_.deriv();
         /*
         // Read resolver angles 
         std::vector<barrett::Puck*> pucks = (device->Wam->getLowLevelWam()).getPucks();

@@ -211,15 +211,16 @@ namespace barrett_hw
                 boost::shared_ptr<HandDevice> hand_device;
                 
                 // stuff for pose and twist
-                KDL::Jacobian kdl_chain_jacobian_;
-                KDL::Chain kdl_chain_;
                 boost::shared_ptr<KDL::ChainFkSolverPos> jnt_to_pose_solver_;
                 boost::shared_ptr<KDL::ChainFkSolverVel_recursive> jnt_to_twist_solver_;
                 boost::shared_ptr<KDL::ChainJntToJacSolver> jnt_to_jac_solver_;
+                KDL::Jacobian kdl_chain_jacobian_;
+                KDL::Chain kdl_chain_;                
                 KDL::JntArray kdl_current_joint_positions_;
-                KDL::JntArray kdl_current_joint_velocities_;
-
-
+                KDL::JntArrayVel kdl_current_joint_velocities_;
+                KDL::Frame kdl_pose_measured_;
+                KDL::Twist kdl_twist_measured_;
+                KDL::FrameVel frame_vel_measured_;
             };
             
 
