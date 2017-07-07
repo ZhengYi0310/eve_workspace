@@ -171,6 +171,7 @@ namespace barrett_hw
         this->registerInterface(&state_interface_);
         this->registerInterface(&effort_interface_);
         this->registerInterface(&semi_absolute_interface_);
+        this->registerInterface(&arm_pose_state_interface_);
 
         
         // Register biotac state interface 
@@ -296,6 +297,14 @@ namespace barrett_hw
         wam_device->kdl_chain_jacobian_.resize(DOF);
         wam_device->kdl_current_joint_positions_.resize(DOF);
         wam_device->kdl_current_joint_velocities_.resize(DOF);
+
+        // Register the arm pose state interface 
+        std::string product_type;
+        param::require(product_nh, "type", product_type, "Barrett product type [wam, bhand].");        
+        wam_device->kdl_pose_measured_ = KDL::Frame::Identity();
+        wam_device->kdl_twist_measured_ = KDL::Twist::Zero();
+        barrett_model::ArmPoseStatesHandle arm_pose_states_handle(product_type, &root_seg_name, &(wam_device->kdl_pose_measured_), &(wam_device->kdl_twist_measured_));
+        arm_pose_state_interface_.registerHandle(arm_pose_states_handle);
                 
         boost::shared_ptr<const urdf::Joint> joint = urdf_model_.getJoint(tip_joint_name);
 

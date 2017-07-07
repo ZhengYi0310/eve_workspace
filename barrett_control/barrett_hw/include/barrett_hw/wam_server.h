@@ -50,6 +50,7 @@
 
 #include <barrett_model/semi_absolute_joint_interface.h>
 #include <barrett_model/biotac_finger_interface.h>
+#include <barrett_model/arm_pose_interface.h>
 
 #include <biotac_sensors/biotac_hand_class.h>
 #include <biotac_sensors/BioTacHand.h>
@@ -250,6 +251,7 @@ namespace barrett_hw
             hardware_interface::VelocityJointInterface velocity_interface_;
             barrett_model::SemiAbsoluteJointInterface semi_absolute_interface_;
             barrett_model::BiotacFingerStateInterface biotac_fingers_interface_;
+            barrett_model::ArmPoseStatesInterface arm_pose_state_interface_;
 
             // Vectors of various barrett structures 
             ManagerMap barrett_managers_;
