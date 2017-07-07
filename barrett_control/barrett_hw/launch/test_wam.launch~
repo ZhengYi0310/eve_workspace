@@ -19,7 +19,8 @@
         bus: "rtcan_left"
         type: "wam"
         tip_joint: "left_wam/palm_yaw_joint"
-        root_joint: "left_wam/base_yaw_joint"
+        tip_segment: "left_wam/wrist_palm_link"
+        root_segment: "left_wam/base_link"
       bhand_left:
         bus: "rtcan_left"
         type: "hand"
@@ -34,7 +35,8 @@
   <include ns="barrett" file="$(find barrett_model)/launch/xacrodisplay.launch"/>
   
   <arg name="rvizconfig" default="$(find barrett_model)/urdf.rviz" /> 
-  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"> 
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+     <param name="/use_gui" value="true"/>  
      <rosparam param="/source_list">[/joint_states]</rosparam> 
      <remap from="robot_description" to="barrett/robot_description_yi" /> 
   </node> 
@@ -49,7 +51,7 @@
   <param name="barrett/can_dev_name" value="rtcan0"/>
 
   <!-- WAM Server -->
-  <node pkg="barrett_hw" type="wam_server" name="wam_server" output="screen"/> 
+  <node pkg="barrett_hw" type="check_kdl_parser" name="check_kdl_parser" output="screen"/> 
 
   <rosparam ns="wam">
     joint_state_controller:

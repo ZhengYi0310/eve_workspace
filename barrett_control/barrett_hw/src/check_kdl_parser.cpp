@@ -71,16 +71,23 @@ int main(int argc, char** argv)
     signal(SIGHUP, quitRequested);    
 
     ros::NodeHandle barrett_nh("barrett");
+    const std::string product_name = "wam_left";
+    ros::NodeHandle product_nh(barrett_nh, "products/" + product_name);
     barrett_hw::BarrettHW barrett_robot(barrett_nh);
-
+    
     /**************/
-    barrett_robot.configure();
+    //barrett_robot.configure();
     /***************/
     
     std::string urdf_str;
     std::string urdf_path;
+    std::string root_joint_name;
+    std::string tip_joint_name;
     param::require(barrett_nh, "urdf_file_path", urdf_path, "The path to the Barrett Wam URDF file.");
     param::require(barrett_nh, "robot_description_yi", urdf_str, "The URDF for the Barrett Wam arm.");
+    param::require(product_nh, "tip_segment", tip_joint_name, "WAM tip joint in URDF.");
+    param::require(product_nh, "root_segment", root_joint_name, "WAM root joint in URDF.");
+
     ROS_INFO("the urdf file path %s", urdf_path.c_str());
     ROS_INFO("the urdf string %s", urdf_str.c_str());
 
@@ -98,6 +105,33 @@ int main(int argc, char** argv)
     cout << " ======================================" << endl;
     SegmentMap::const_iterator root = my_tree.getRootSegment();
     printLink(root, "");
+
+    KDL::Chain kdl_chain;
+    bool res;
+    try
+    {
+        res = my_tree.getChain(root_joint_name, tip_joint_name, kdl_chain);
+    }
+    catch(...)
+    {
+        ROS_ERROR("Could not extract chain between %s and %s from the kdl tree.", root_joint_name.c_str(), tip_joint_name.c_str());
+    }
+
+    if (!res)
+    {
+        ROS_ERROR("Could not extract chain between %s and %s from kdl tree", root_joint_name.c_str(), tip_joint_name.c_str());
+    }
+        
+        
+    if (static_cast<size_t>(kdl_chain.getNrOfJoints()) != 7)
+    {
+        ROS_ERROR("For now, the KDL chain needs to have 7 arm joints, but only has >%lu<", static_cast<size_t>(kdl_chain.getNrOfJoints()));
+    }
+    else
+    {
+        ROS_INFO_STREAM("the KDL chain has " << kdl_chain.getNrOfJoints() << " joints!");
+    }
+    
 
     // Timer variables 
     struct timespec ts = {0, 0};

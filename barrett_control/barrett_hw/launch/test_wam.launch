@@ -19,7 +19,8 @@
         bus: "rtcan_left"
         type: "wam"
         tip_joint: "left_wam/palm_yaw_joint"
-        root_joint: "left_wam/base_yaw_joint"
+        tip_segment: "left_wam/wrist_palm_link"
+        root_segment: "left_wam/base_link"
       bhand_left:
         bus: "rtcan_left"
         type: "hand"

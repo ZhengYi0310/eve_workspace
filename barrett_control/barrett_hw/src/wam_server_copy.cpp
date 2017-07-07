@@ -272,33 +272,28 @@ namespace barrett_hw
         
         wam_device->resolver_ranges = this->compute_resolver_ranges<DOF>(wam_device->Wam->getLowLevelWam());
 
-        // Get URDF links starting at the product tip link 
+        // Get URDF links starting at the product tip link
+        // feed KDL::Segment name !!! not joint name!!! careful!!!!
+        std::string tip_seg_name;
+        std::string root_seg_name;
         std::string tip_joint_name;
-        std::string root_joint_name;
+        param::require(product_nh, "tip_segment", tip_seg_name, "WAM tip link in URDF.");
+        param::require(product_nh, "root_segment", root_seg_name, "WAM root link in URDF.");
         param::require(product_nh, "tip_joint", tip_joint_name, "WAM tip joint in URDF.");
-        param::require(product_nh, "root_joint", root_joint_name, "WAM root joint in URDF.");
-        
         printLink(kdl_tree_.getRootSegment(), "");
 
-        bool res;
-        try
+        if (!kdl_tree_.getChain(root_seg_name, tip_seg_name, wam_device->kdl_chain_))
         {
-            res = kdl_tree_.getChain(root_joint_name, tip_joint_name, wam_device->kdl_chain_);
+            ROS_ERROR("Could not extract chain between %s and %s from kdl tree", root_seg_name.c_str(), tip_seg_name.c_str());
         }
-        catch(...)
-        {
-            ROS_ERROR("Could not extract chain between %s and %s from the kdl tree.", root_joint_name.c_str(), tip_joint_name.c_str());
-        }
-
-        if (!res)
-        {
-            ROS_ERROR("Could not extract chain between %s and %s from kdl tree", root_joint_name.c_str(), tip_joint_name.c_str());
-        }
-        
         
         if (static_cast<size_t>(wam_device->kdl_chain_.getNrOfJoints()) != DOF)
         {
             ROS_ERROR("For now, the KDL chain needs to have >%lu< arm joints, but only has >%lu<", DOF, static_cast<size_t>(wam_device->kdl_chain_.getNrOfJoints()));
+        }
+        else 
+        {
+            ROS_INFO_STREAM("The KDL Chain for this device has %i " << static_cast<int>(wam_device->kdl_chain_.getNrOfJoints()) << " joints!");
         }
         
         // Initialize all the KDL solvers and matrix         
