@@ -4,7 +4,7 @@ project(barrett_hw)
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
 find_package(catkin COMPONENTS hardware_interface  
-  barrett_model kdl_urdf_tools kdl_parser terse_roscpp controller_manager biotac_sensors
+  barrett_model kdl_urdf_tools kdl_parser kdl_conversions terse_roscpp controller_manager biotac_sensors
   control_toolbox rospy xenomai_ros realtime_tools pluginlib)
 
 find_package(barrett)
@@ -14,6 +14,14 @@ include_directories(
 )
 
 if(Xenomai_FOUND)
+  add_message_files(DIRECTORY msg FILES
+  		arm_cartesian_state.msg
+        robot_cartesian_state.msg
+  )
+  generate_messages(DEPENDENCIES
+  geometry_msgs
+  std_msgs
+  )
 
   include_directories(include ${catkin_INCLUDE_DIRS})
 
@@ -32,7 +40,10 @@ if(Xenomai_FOUND)
   # Add xenomai flags
   add_xenomai_flags()
 
-  add_library(biotac_state_controller src/biotac_state_controller.cpp )
+  add_library(biotac_state_controller src/biotac_state_controller.cpp)
+  target_link_libraries(biotac_state_controller xenomai native rtdm ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
+  add_library(arm_cartesian_state_controller src/arm_cartesian_state_controller.cpp )
+  target_link_libraries(arm_cartesian_state_controller xenomai native rtdm ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
   add_library(wam_server_lib src/wam_server_copy.cpp)
   target_link_libraries(wam_server_lib xenomai native rtdm ${BARRETT_LIBRARIES} ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 
@@ -53,7 +64,7 @@ if(Xenomai_FOUND)
   ## INCLUDE_DIRS: 
   ## LIBRARIES: libraries you create in this project that dependent projects also need
   catkin_package(
-      DEPENDS hardware_interface barrett barrett_model kdl_urdf_tools terse_roscpp controller_manager control_toolbox rospy biotac_sensors realtime_tools pluginlib orocos_kdl
+      DEPENDS hardware_interface barrett barrett_model kdl_urdf_tools kdl_parser kdl_conversions terse_roscpp controller_manager control_toolbox rospy biotac_sensors realtime_tools pluginlib orocos_kdl
       CATKIN_DEPENDS # TODO
       INCLUDE_DIRS # TODO include
       LIBRARIES wam_server

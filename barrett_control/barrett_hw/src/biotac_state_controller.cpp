@@ -14,7 +14,7 @@ namespace biotac_state_controller
 {
     bool BioTacStateController::init(barrett_model::BiotacFingerStateInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controller_nh)
     {
-        // get all serial numbes from the hardware interface 
+        // get all serial numbers from the hardware interface 
         const std::vector<std::string>& serial_numbers = hw->getNames();
         num_biotac_fingers_ = serial_numbers.size();
         for (size_t i = 0; i < num_biotac_fingers_; i++)
