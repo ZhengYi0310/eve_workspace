@@ -677,76 +677,107 @@ int main (int argc, char** argv)
     barrett_nh.param("period", period_rt_loop, 0.004); //Default at 250hz
     // Don't put this before ProductManager.startExecutionManager()    
     barrett::PeriodicLoopTimer loopTimer(period_rt_loop, 49); // Set the priority lower than the 500hz thread
-    if (verbose)
-    {
-        /*
-        size_t period_us = period_rt_loop * 1e6;
-        double start;
-        size_t duration;
-        size_t min = std::numeric_limits<size_t>::max();
-        size_t max = 0;
-        size_t sum = 0;
-        size_t sumSq 0;
-        size_t loopCount = 0;
-        size_t overrruns = 0;
-        size_t missedReleasePoints = 0;
-        */
-    }
+    uint32_t period_us = period_rt_loop * 1e6;
+    double start;
+    uint32_t duration;
+    uint32_t min = std::numeric_limits<size_t>::max();
+    uint32_t max = 0;
+    uint64_t sum = 0;
+    uint64_t sumSq = 0;
+    uint32_t loopCount = 0;
+    uint32_t overrruns = 0;
+    uint32_t missedReleasePoints = 0;
     
     // Construct the controller manager 
     ros::NodeHandle nh;
     controller_manager::ControllerManager manager(&barrett_robot, nh);
 
-    uint32_t count = 0;
-
     //Run as fast as possible
     //rt_task_set_periodic(NULL, TM_NOW, static_cast<RTIME>(0.002 * 1e9));
-    while (!g_quit)
+    try
     {
-        //boost::this_thread::interruption_point();
-        loopTimer.wait();
-        // Get the time / period 
-        if (!clock_gettime(CLOCK_REALTIME, &ts))
+        uint32_t count = 0;        
+        while (!g_quit)
         {
-            now.sec = ts.tv_sec;
-            now.nsec = ts.tv_nsec;
-            period = now - last;
-            last = now;
-        }
-        else 
-        {
-            ROS_FATAL("Failed to poll realtime clock!");
-            break;
-        }
-         
-        // Read the state from the WAM 
-        if (!barrett_robot.read(now, period))
-        {
-            g_quit = true;
-            break;
-        }
-        
-        // update the controllers 
-        manager.update(now, period);
-
-        // Write the command to the WAM 
-        barrett_robot.write(now, period);
-        
-        if (count++ > 1000)
-        {
-            if (publisher.trylock())
+            boost::this_thread::interruption_point();
+            missedReleasePoints += loopTimer.wait();
+            start = barrett::highResolutionSystemTime();
+            // Get the time / period 
+            if (!clock_gettime(CLOCK_REALTIME, &ts))
             {
-                count = 0;
-                publisher.msg_.data = period;
-                publisher.unlockAndPublish();
-
+                now.sec = ts.tv_sec;
+                now.nsec = ts.tv_nsec;
+                period = now - last;
+                last = now;
             }
-        }
+            else 
+            {
+                ROS_FATAL("Failed to poll realtime clock!");
+                break;
+            }
+         
+            // Read the state from the WAM 
+            if (!barrett_robot.read(now, period))
+            {
+                g_quit = true;
+                break;
+            }
         
+            // update the controllers 
+            manager.update(now, period);
+
+            // Write the command to the WAM 
+            barrett_robot.write(now, period);
+
+            duration = (barrett::highResolutionSystemTime() - start) * 1e6;
+            if (duration < min)
+            {
+                min = duration;
+            }
+            if (duration > max)
+            {
+                max = duration;
+            }
+            sum += duration;
+            sumSq += duration * duration;
+            ++loopCount;
+            if (duration > period_us)
+            {
+                overrruns++;
+            }
+        
+            if (count++ > 1000)
+            {
+                if (publisher.trylock())
+                {
+                    count = 0;
+                    publisher.msg_.data = period;
+                    publisher.unlockAndPublish();
+                }
+            }
+        
+        }
     }
+    catch (const boost::thread_interrupted& e)
+    {}
 
     publisher.stop();
-    
+
+    if (verbose)
+    {
+        double mean = (double)sum / loopCount;
+        double stdev = std::sqrt(((double)sumSq / loopCount) - mean * mean);
+
+        ROS_INFO("RealTimeExecutionManager control-loop stats (microseconds):");
+        ROS_INFO_STREAM("  target period " << period_us);
+        ROS_INFO_STREAM("  min = " << min);
+        ROS_INFO_STREAM("  max = " << max);
+        ROS_INFO_STREAM("  ave = " << mean);
+        ROS_INFO_STREAM("  stdev = " << stdev);
+        ROS_INFO_STREAM(" num total cycles = " << loopCount);
+        ROS_INFO_STREAM(" num missed release points = " << missedReleasePoints);
+        ROS_INFO_STREAM(" num overrruns = " << overrruns);
+    }
     std::cerr<<"Stpping spinner..."<<std::endl;
     spinner.stop();
 
