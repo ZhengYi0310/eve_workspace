@@ -269,6 +269,7 @@ namespace barrett_hw
             std::string config_path_;
             bool tactile_sensors_exist_;
             size_t joint_states_to_biotac_counter_;
+            bool verbose_; // To decide if print out the real time publishing status
 
         protected:
 

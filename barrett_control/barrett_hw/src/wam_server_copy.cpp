@@ -1,11 +1,15 @@
 /*************************************************************************
-	> File Name: wam_server.cpp
-	> Author: 
-	> Mail: 
+	> File Name: wam_server_copy.cpp
+	> Author: Yi Zheng
+	> Mail: hczhengcq@gmail.com
 	> Created Time: Thu 01 Jun 2017 01:44:02 PM PDT
  ************************************************************************/
-
+#include <string>
+#include <limits>
+#include <cmath>
+#include <cassert>
 #include <iostream>
+
 #include <barrett_hw/wam_server.h>
 
 namespace barrett_hw
@@ -17,8 +21,7 @@ namespace barrett_hw
       ramp(NULL, 0.03), // Default Cartesian Velocity
       config_path_(""), // Point to the default config path 
       joint_states_to_biotac_counter_(0)
-    {
-    }
+    {};
 
     bool BarrettHW::assignKDLTree(KDL::Tree kdl_tree, size_t num_of_segments)
     {
@@ -528,8 +531,6 @@ namespace barrett_hw
 
         // Get the jacobian 
         device->jnt_to_jac_solver_->JntToJac(device->kdl_current_joint_positions_, device->kdl_chain_jacobian_);
-        ROS_INFO_STREAM("the jacabian has " << device->kdl_chain_jacobian_.data.rows() << " cartesian dimensions!");
-        ROS_INFO_STREAM("the jacobian has " << device->kdl_chain_jacobian_.data.cols() << " joint dimensions!");
 
         // Get the cartesian pose 
         device->jnt_to_pose_solver_->JntToCart(device->kdl_current_joint_positions_, device->kdl_pose_measured_);
@@ -670,8 +671,27 @@ int main (int argc, char** argv)
         ros::Duration(1.0).sleep();
     }
     
-    // Don't put this before ProductManager.startExecutionManager()
-    barrett::PeriodicLoopTimer loopTimer(0.0025, 49); // Set the priority lower than the 500hz thread 
+    bool verbose;
+    double period_rt_loop;
+    barrett_nh.param("verbose", verbose, false);
+    barrett_nh.param("period", period_rt_loop, 0.004); //Default at 250hz
+    // Don't put this before ProductManager.startExecutionManager()    
+    barrett::PeriodicLoopTimer loopTimer(period_rt_loop, 49); // Set the priority lower than the 500hz thread
+    if (verbose)
+    {
+        /*
+        size_t period_us = period_rt_loop * 1e6;
+        double start;
+        size_t duration;
+        size_t min = std::numeric_limits<size_t>::max();
+        size_t max = 0;
+        size_t sum = 0;
+        size_t sumSq 0;
+        size_t loopCount = 0;
+        size_t overrruns = 0;
+        size_t missedReleasePoints = 0;
+        */
+    }
     
     // Construct the controller manager 
     ros::NodeHandle nh;

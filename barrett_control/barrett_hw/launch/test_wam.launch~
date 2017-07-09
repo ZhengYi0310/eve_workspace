@@ -1,12 +1,15 @@
 <launch>
   <!-- Launch several pieces of barrett hardware -->
-
   <arg name="CONFIG_LEFT" default="/etc/barrett/default.conf"/>
   <arg name="BUS_LEFT" default="/etc/barrett/default.conf"/>
 
   <!-- Config / Bus -->
   <param name="barrett/busses/rtcan_left/config" value="$(arg CONFIG_LEFT)"/>
   <param name="barrett/busses/rtcan_left/bus" value="$(arg BUS_LEFT)"/>
+
+  <!-- Realtime parameter -->
+  <param name="barrett/verbose" value="true"/>
+  <param name="barrett/period" value="0.0025"/>
 
   <!-- Products -->
   <rosparam ns="barrett">
@@ -51,7 +54,7 @@
   <param name="barrett/can_dev_name" value="rtcan0"/>
 
   <!-- WAM Server -->
-  <node pkg="barrett_hw" type="check_kdl_parser" name="check_kdl_parser" output="screen"/> 
+  <node pkg="barrett_hw" type="wam_server" name="wam_server" output="screen"/> 
 
   <rosparam ns="wam">
     joint_state_controller:
