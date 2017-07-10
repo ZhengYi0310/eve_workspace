@@ -61,7 +61,7 @@
       type: joint_state_controller/JointStateController
       publish_rate: 50
     arm_cartesian_state_controller:
-      type: arm_cartesian_state_controller/ArmCartesianStateController
+      type: barrett_hw/ArmCartesianStateController
       publish_rate: 50
   </rosparam>
 

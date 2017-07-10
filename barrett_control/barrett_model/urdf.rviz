@@ -9,17 +9,7 @@ Panels:
         - /TF1
         - /TF1/Frames1
         - /TF1/Tree1
-        - /TF1/Tree1/rack11
-        - /TF1/Tree1/rack11/rack51
-        - /TF1/Tree1/rack11/rack51/rack61
-        - /TF1/Tree1/rack11/rack51/rack61/left_wam_rack1
-        - /TF1/Tree1/rack11/rack51/rack61/left_wam_rack1/left_wam/base_link1
-        - /TF1/Tree1/rack11/rack51/rack61/left_wam_rack1/left_wam/base_link1/left_wam/shoulder_yaw_link1
-        - /TF1/Tree1/rack11/rack51/rack61/left_wam_rack1/left_wam/base_link1/left_wam/shoulder_yaw_link1/left_wam/shoulder_pitch_link1
-        - /TF1/Tree1/rack11/rack51/rack61/left_wam_rack1/left_wam/base_link1/left_wam/shoulder_yaw_link1/left_wam/shoulder_pitch_link1/left_wam/upper_arm_link1
-        - /TF1/Tree1/rack11/rack51/rack61/left_wam_rack1/left_wam/base_link1/left_wam/shoulder_yaw_link1/left_wam/shoulder_pitch_link1/left_wam/upper_arm_link1/left_wam/forearm_link1
-        - /TF1/Tree1/rack11/rack51/rack61/left_wam_rack1/left_wam/base_link1/left_wam/shoulder_yaw_link1/left_wam/shoulder_pitch_link1/left_wam/upper_arm_link1/left_wam/forearm_link1/left_wam/wrist_yaw_link1
-        - /TF1/Tree1/rack11/rack51/rack61/left_wam_rack1/left_wam/base_link1/left_wam/shoulder_yaw_link1/left_wam/shoulder_pitch_link1/left_wam/upper_arm_link1/left_wam/forearm_link1/left_wam/wrist_yaw_link1/left_wam/wrist_pitch_link1
+        - /MarkerArray1
       Splitter Ratio: 0.815287
     Tree Height: 523
   - Class: rviz/Selection
@@ -222,6 +212,14 @@ Visualization Manager:
       Update Interval: 0
       Value: true
       Visual Enabled: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /robot_cartesian_state_visualization
+      Name: MarkerArray
+      Namespaces:
+        wam0: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -279,5 +277,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1200
-  X: 96
+  X: 83
   Y: 67

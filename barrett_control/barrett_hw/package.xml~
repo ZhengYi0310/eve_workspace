@@ -32,6 +32,7 @@
   
   <run_depend>barrett</run_depend> 
   <run_depend>hardware_interface</run_depend>
+  <run_depend>controller_interface</run_depend>
   <run_depend>barrett_model</run_depend> 
   <run_depend>kdl_urdf_tools</run_depend> 
   <run_depend>kdl_parser</run_depend> 

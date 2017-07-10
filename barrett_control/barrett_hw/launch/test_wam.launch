@@ -63,6 +63,7 @@
     arm_cartesian_state_controller:
       type: barrett_hw/ArmCartesianStateController
       publish_rate: 50
+      visualization: true
   </rosparam>
 
   <node name="default_controller_spawner"

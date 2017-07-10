@@ -26,9 +26,15 @@ namespace arm_cartesian_state_controller
             return false;
         }
 
+        if (!controller_nh.getParam("visualization", visualization_))
+        {
+            ROS_ERROR("Parameter 'visualization' not set!");
+            return false;
+        }
+
         // realtime publisher 
         realtime_pub_.reset(new realtime_tools::RealtimePublisher<barrett_hw::robot_cartesian_state>(root_nh, "robot_cartesian_state", 10));
-
+        visualization_realtime_pub_.reset(new realtime_tools::RealtimePublisher<visualization_msgs::MarkerArray>(root_nh, "robot_cartesian_state_visualization", 10));
         // allocate messages  get the topname space
         for (size_t i = 0; i < num_devices_; i++)
         {
@@ -36,6 +42,25 @@ namespace arm_cartesian_state_controller
             barrett_hw::arm_cartesian_state arm_cartesian_state;
             realtime_pub_->msg_.robot_cartesian_state.push_back(arm_cartesian_state);
             robot_cartesian_state_.robot_cartesian_state.push_back(arm_cartesian_state);
+
+            if (visualization_)
+            {
+                visualization_msgs::Marker marker;
+                visualization_realtime_pub_->msg_.markers.push_back(marker);
+                visualization_realtime_pub_->msg_.markers[i].header.frame_id = arm_cartesian_state_handle_[i].getBaseFrame();
+                std::stringstream ss;
+                ss << i;
+                visualization_realtime_pub_->msg_.markers[i].ns = arm_cartesian_state_handle_[i].getName() + ss.str();
+                visualization_realtime_pub_->msg_.markers[i].id = i;
+                visualization_realtime_pub_->msg_.markers[i].type = visualization_msgs::Marker::ARROW;
+                visualization_realtime_pub_->msg_.markers[i].action = visualization_msgs::Marker::ADD;
+                visualization_realtime_pub_->msg_.markers[i].lifetime = ros::Duration(0);
+                visualization_realtime_pub_->msg_.markers[i].frame_locked = false;
+                visualization_realtime_pub_->msg_.markers[i].color.r = 0.5f;
+                visualization_realtime_pub_->msg_.markers[i].color.g = 0.5f;
+                visualization_realtime_pub_->msg_.markers[i].color.b = 1.0f;
+                visualization_realtime_pub_->msg_.markers[i].color.a = 0.5;
+            }
         }
         return true;
     }
@@ -50,7 +75,7 @@ namespace arm_cartesian_state_controller
         if (publish_rate_ > 0.0 && last_publish_time_ + ros::Duration(1.0 / publish_rate_) < time)
         {
             // try to publish 
-            if (realtime_pub_->trylock())
+            if (realtime_pub_->trylock() && visualization_realtime_pub_->trylock())
             {
                 // Increment the time since we are acutally publishing 
                 last_publish_time_ = last_publish_time_ + ros::Duration(1.0 / publish_rate_);
@@ -65,8 +90,27 @@ namespace arm_cartesian_state_controller
                     robot_cartesian_state_.robot_cartesian_state[i].Twist = twist_;
                     robot_cartesian_state_.robot_cartesian_state[i].Pose = pose_;
                     realtime_pub_->msg_.robot_cartesian_state[i] = robot_cartesian_state_.robot_cartesian_state[i];
+
+                    if (visualization_)
+                    {
+                        visualization_realtime_pub_->msg_.markers[i].header.stamp = time;
+                        visualization_realtime_pub_->msg_.markers[i].scale.x = 0.8 * twist_.linear.x;
+                        visualization_realtime_pub_->msg_.markers[i].scale.y = 0.8 * twist_.linear.y;
+                        visualization_realtime_pub_->msg_.markers[i].scale.z = 0.8 * twist_.linear.z;
+                        visualization_realtime_pub_->msg_.markers[i].pose.position.x = pose_.position.x;
+                        visualization_realtime_pub_->msg_.markers[i].pose.position.y = pose_.position.y;
+                        visualization_realtime_pub_->msg_.markers[i].pose.position.z = pose_.position.z;
+                        visualization_realtime_pub_->msg_.markers[i].pose.orientation.x = pose_.orientation.x;
+                        visualization_realtime_pub_->msg_.markers[i].pose.orientation.y = pose_.orientation.y;
+                        visualization_realtime_pub_->msg_.markers[i].pose.orientation.z = pose_.orientation.z;
+                        visualization_realtime_pub_->msg_.markers[i].pose.orientation.w = pose_.orientation.w;
+                    }
                 }
                 realtime_pub_->unlockAndPublish();
+                if (visualization_)
+                {
+                    visualization_realtime_pub_->unlockAndPublish();
+                }
             }
         }
     }

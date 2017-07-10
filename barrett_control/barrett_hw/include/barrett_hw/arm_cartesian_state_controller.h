@@ -18,6 +18,8 @@
 
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/Pose.h>
+#include <visualization_msgs/Marker.h>
+#include <visualization_msgs/MarkerArray.h>
 #include <kdl_conversions/kdl_msg.h> //watch out for migration for a newer version ROS
 
 namespace arm_cartesian_state_controller
@@ -47,8 +49,10 @@ namespace arm_cartesian_state_controller
         private:
         std::vector<barrett_model::ArmPoseStatesHandle> arm_cartesian_state_handle_;
         boost::shared_ptr<realtime_tools::RealtimePublisher<barrett_hw::robot_cartesian_state> > realtime_pub_;
+        boost::shared_ptr<realtime_tools::RealtimePublisher<visualization_msgs::MarkerArray> > visualization_realtime_pub_;
         ros::Time last_publish_time_;
         double publish_rate_;
+        bool visualization_;
         unsigned int num_devices_;
         geometry_msgs::Twist twist_;
         geometry_msgs::Pose pose_;
