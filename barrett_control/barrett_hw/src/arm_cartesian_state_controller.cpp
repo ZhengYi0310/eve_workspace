@@ -16,7 +16,7 @@ namespace arm_cartesian_state_controller
         num_devices_ = product_names.size();
         for (size_t i = 0; i < num_devices_; i++)
         {
-            ROS_INFO("Get a deivce with type %s", product_names[i].c_str());
+            ROS_INFO("Get a deivce with type >>%s<< with root link >>%s<<.", product_names[i].c_str(), hw->getHandle(product_names[i]).getBaseFrame().c_str());
         }
 
         // get the publish period 
@@ -29,12 +29,13 @@ namespace arm_cartesian_state_controller
         // realtime publisher 
         realtime_pub_.reset(new realtime_tools::RealtimePublisher<barrett_hw::robot_cartesian_state>(root_nh, "robot_cartesian_state", 10));
 
-        // allocate messages 
+        // allocate messages  get the topname space
         for (size_t i = 0; i < num_devices_; i++)
         {
             arm_cartesian_state_handle_.push_back(hw->getHandle(product_names[i]));
             barrett_hw::arm_cartesian_state arm_cartesian_state;
             realtime_pub_->msg_.robot_cartesian_state.push_back(arm_cartesian_state);
+            robot_cartesian_state_.robot_cartesian_state.push_back(arm_cartesian_state);
         }
         return true;
     }
@@ -63,6 +64,7 @@ namespace arm_cartesian_state_controller
                     robot_cartesian_state_.robot_cartesian_state[i].base_frame = arm_cartesian_state_handle_[i].getBaseFrame();
                     robot_cartesian_state_.robot_cartesian_state[i].Twist = twist_;
                     robot_cartesian_state_.robot_cartesian_state[i].Pose = pose_;
+                    realtime_pub_->msg_.robot_cartesian_state[i] = robot_cartesian_state_.robot_cartesian_state[i];
                 }
                 realtime_pub_->unlockAndPublish();
             }

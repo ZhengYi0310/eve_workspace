@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(barrett_hw)
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin COMPONENTS hardware_interface  
+find_package(catkin COMPONENTS hardware_interface controller_interface 
   barrett_model kdl_urdf_tools kdl_parser kdl_conversions terse_roscpp controller_manager biotac_sensors
   control_toolbox rospy xenomai_ros realtime_tools pluginlib)
 
@@ -40,7 +40,10 @@ if(Xenomai_FOUND)
   # Add xenomai flags
   add_xenomai_flags()
 
-  add_library(biotac_state_controller src/biotac_state_controller.cpp )
+  add_library(biotac_state_controller src/biotac_state_controller.cpp)
+  target_link_libraries(biotac_state_controller xenomai native rtdm ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
+  add_library(arm_cartesian_state_controller src/arm_cartesian_state_controller.cpp )
+  target_link_libraries(arm_cartesian_state_controller xenomai native rtdm ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
   add_library(wam_server_lib src/wam_server_copy.cpp)
   target_link_libraries(wam_server_lib xenomai native rtdm ${BARRETT_LIBRARIES} ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 

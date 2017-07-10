@@ -266,12 +266,9 @@ namespace barrett_hw
 
         // Get URDF links starting at the product tip link
         // feed KDL::Segment name !!! not joint name!!! careful!!!!
-        std::string tip_seg_name;
-        std::string root_seg_name;
-        std::string tip_joint_name;
-        param::require(product_nh, "tip_segment", tip_seg_name, "WAM tip link in URDF.");
-        param::require(product_nh, "root_segment", root_seg_name, "WAM root link in URDF.");
-        param::require(product_nh, "tip_joint", tip_joint_name, "WAM tip joint in URDF.");
+        param::require(product_nh, "tip_segment", wam_device->tip_seg_name, "WAM tip link in URDF.");
+        param::require(product_nh, "root_segment", wam_device->root_seg_name, "WAM root link in URDF.");
+        param::require(product_nh, "tip_joint", wam_device->tip_joint_name, "WAM tip joint in URDF.");
 
         if (!kdl_parser::treeFromUrdfModel(urdf_model_, kdl_tree_)) 
         {
@@ -279,9 +276,9 @@ namespace barrett_hw
         }
         printLink(kdl_tree_.getRootSegment(), "");
 
-        if (!kdl_tree_.getChain(root_seg_name, tip_seg_name, wam_device->kdl_chain_))
+        if (!kdl_tree_.getChain(wam_device->root_seg_name, wam_device->tip_seg_name, wam_device->kdl_chain_))
         {
-            ROS_ERROR("Could not extract chain between %s and %s from kdl tree", root_seg_name.c_str(), tip_seg_name.c_str());
+            ROS_ERROR("Could not extract chain between %s and %s from kdl tree", wam_device->root_seg_name.c_str(), wam_device->tip_seg_name.c_str());
         }
         
         if (static_cast<size_t>(wam_device->kdl_chain_.getNrOfJoints()) != DOF)
@@ -306,10 +303,10 @@ namespace barrett_hw
         param::require(product_nh, "type", product_type, "Barrett product type [wam, bhand].");        
         wam_device->kdl_pose_measured_ = KDL::Frame::Identity();
         wam_device->kdl_twist_measured_ = KDL::Twist::Zero();
-        barrett_model::ArmPoseStatesHandle arm_pose_states_handle(product_type, &root_seg_name, &(wam_device->kdl_pose_measured_), &(wam_device->kdl_twist_measured_));
+        barrett_model::ArmPoseStatesHandle arm_pose_states_handle(product_type, &(wam_device->root_seg_name), &(wam_device->kdl_pose_measured_), &(wam_device->kdl_twist_measured_));
         arm_pose_state_interface_.registerHandle(arm_pose_states_handle);
                 
-        boost::shared_ptr<const urdf::Joint> joint = urdf_model_.getJoint(tip_joint_name);
+        boost::shared_ptr<const urdf::Joint> joint = urdf_model_.getJoint(wam_device->tip_joint_name);
 
         // Resize joint names 
         wam_device->joint_names.resize(DOF);
@@ -325,7 +322,7 @@ namespace barrett_hw
                 // Make sure we didn't run out of links 
                 if (!joint.get())
                 {
-                    ROS_ERROR_STREAM("Run out of joints while parsing URDF starting at joint: " << tip_joint_name);
+                    ROS_ERROR_STREAM("Run out of joints while parsing URDF starting at joint: " << wam_device->tip_joint_name);
                     throw std::runtime_error("Run out of joints.");
                 }
             }

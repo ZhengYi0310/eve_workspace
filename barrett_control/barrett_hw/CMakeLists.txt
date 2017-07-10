@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(barrett_hw)
 # Load catkin and all dependencies required for this package
 # TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin COMPONENTS hardware_interface  
+find_package(catkin COMPONENTS hardware_interface controller_interface 
   barrett_model kdl_urdf_tools kdl_parser kdl_conversions terse_roscpp controller_manager biotac_sensors
   control_toolbox rospy xenomai_ros realtime_tools pluginlib)
 
@@ -64,7 +64,7 @@ if(Xenomai_FOUND)
   ## INCLUDE_DIRS: 
   ## LIBRARIES: libraries you create in this project that dependent projects also need
   catkin_package(
-      DEPENDS hardware_interface barrett barrett_model kdl_urdf_tools kdl_parser kdl_conversions terse_roscpp controller_manager control_toolbox rospy biotac_sensors realtime_tools pluginlib orocos_kdl
+      DEPENDS hardware_interface controller_interface barrett barrett_model kdl_urdf_tools kdl_parser kdl_conversions terse_roscpp controller_manager control_toolbox rospy biotac_sensors realtime_tools pluginlib orocos_kdl
       CATKIN_DEPENDS # TODO
       INCLUDE_DIRS # TODO include
       LIBRARIES wam_server

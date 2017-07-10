@@ -189,7 +189,8 @@ namespace barrett_hw
                 //boost::shared_ptr<barrett::systems::Wam<DOF> > Wam;
                 //barrett::LowLevelWam<DOF>& interface;
                 
-                // Configuration 
+                // Configuration
+                std::string tip_seg_name, root_seg_name, tip_joint_name;
                 std::vector<std::string> joint_names;
                 Eigen::Matrix<double, DOF, 1> resolver_ranges, effort_limits, velocity_limits;
 
