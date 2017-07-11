@@ -21,6 +21,7 @@ if(Xenomai_FOUND)
   generate_messages(DEPENDENCIES
   geometry_msgs
   std_msgs
+  visualization_msgs
   )
 
   include_directories(include ${catkin_INCLUDE_DIRS})
@@ -40,8 +41,8 @@ if(Xenomai_FOUND)
   # Add xenomai flags
   add_xenomai_flags()
 
-  add_library(biotac_state_controller src/biotac_state_controller.cpp)
-  target_link_libraries(biotac_state_controller xenomai native rtdm ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
+  #add_library(biotac_state_controller src/biotac_state_controller.cpp)
+  #target_link_libraries(biotac_state_controller xenomai native rtdm ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
   add_library(arm_cartesian_state_controller src/arm_cartesian_state_controller.cpp )
   target_link_libraries(arm_cartesian_state_controller xenomai native rtdm ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
   add_library(wam_server_lib src/wam_server_copy.cpp)

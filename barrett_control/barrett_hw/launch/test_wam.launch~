@@ -27,7 +27,7 @@
       bhand_left:
         bus: "rtcan_left"
         type: "hand"
-        tactile: false
+        tactile: true
   </rosparam>
 
   <!-- Launch several pieces of barrett hardware -->
@@ -62,6 +62,10 @@
       publish_rate: 50
     arm_cartesian_state_controller:
       type: barrett_hw/ArmCartesianStateController
+      publish_rate: 50
+      visualization: false
+    biotac_state_controller:
+      type: barrett_hw/BioTacStateController
       publish_rate: 50
   </rosparam>
 

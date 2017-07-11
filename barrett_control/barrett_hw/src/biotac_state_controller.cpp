@@ -68,25 +68,29 @@ namespace biotac_state_controller
                 realtime_pub_->msg_.header.stamp = time;
                 for (size_t i = 0; i < num_biotac_fingers_; i++)
                 {
+                    
                     // assign the bitac data first 
                     biotac_sensors::BioTacData bt_data;
+                    /*
                     bt_data.bt_serial = biotac_state_[i].getBtSerial();
                     bt_data.bt_position = biotac_state_[i].getBtPosition();
                     bt_data.tdc_data = biotac_state_[i].getTDCData();
                     bt_data.tac_data = biotac_state_[i].getTACData();
                     bt_data.pdc_data = biotac_state_[i].getPDCData();
-                    ROS_INFO("filling pac and electrode data...");
-                    
+                    */
+                    /* 
                     for (size_t j = 0; j < 22; j++)
                     {
-                        bt_data.pac_data[j] = (biotac_state_[i].getPACData())[j];
-                    }
-
-                    for (size_t j = 0; j < 19; j++)
-                    {
-                        bt_data.electrode_data[j] = (biotac_state_[i].getElectrodeData())[j];
+                        bt_data.pac_data[j] = static_cast<uint16_t>((biotac_state_[i].getPACDataWithIndex(j)));
                     }
                     
+                    for (size_t j = 0; j < 19; j++)
+                    {
+                        bt_data.electrode_data[j] = static_cast<uint16_t>((biotac_state_[i].getElectrodeDataWithIndex(j)));
+                    }
+                    */
+                    bt_data = biotac_state_[i].getCompleteData();
+                    realtime_pub_->msg_.bt_data[i] = bt_data;
                 }
                 realtime_pub_->unlockAndPublish();
             }

@@ -141,22 +141,16 @@ namespace barrett_hw
 
                     ROS_INFO("Collect the first batch and assign biotac values ...");
                     biotac_devices_->bt_hand_msg = biotac_devices_->interface->collectBatch();
-                    biotac_devices_->assign_value();
                     ROS_INFO("Register biotac state handles for the biotac hardware interface.");
             
                      
                     for (int i = 0; i < (int)(biotac_devices_->bt_hand_msg).bt_data.size(); i++)
                     {
-                        barrett_model::BiotacFingerStateHandle biotac_finger_state_handle((biotac_devices_->bt_serial_vec)[i],
-                                                                                  &((biotac_devices_->bt_position_vec)[i]),
-                                                                                  &((biotac_devices_->tdc_data_vec)[i]),
-                                                                                  &((biotac_devices_->tac_data_vec)[i]),
-                                                                                  &((biotac_devices_->pdc_data_vec)[i]),
-                                                                                  &((biotac_devices_->pac_data_array)[i]),
-                                                                                  &((biotac_devices_->electrode_data_array)[i]));
+                        barrett_model::BiotacFingerStateHandle biotac_finger_state_handle((biotac_devices_->bt_hand_msg).bt_data[i].bt_serial, &((biotac_devices_->bt_hand_msg).bt_data[i]));
                         biotac_fingers_interface_.registerHandle(biotac_finger_state_handle);
 
-                        ROS_INFO("Create and register handle for the >%i th< biotac sensor, with serial number >%s<, on cheetah position >%i<", (i + 1), (biotac_devices_->bt_serial_vec)[i].c_str(), (biotac_devices_->bt_position_vec)[i]);
+
+                        ROS_INFO("Create and register handle for the >%i th< biotac sensor, with serial number >%s<, on cheetah position >%i<", (i + 1), (biotac_devices_->bt_hand_msg).bt_data[i].bt_serial.c_str(), (biotac_devices_->bt_hand_msg).bt_data[i].bt_position);
                     }
                     
             
@@ -415,6 +409,7 @@ namespace barrett_hw
 
         // Wait for the system to become ACTIVE 
         this->wait_for_mode(barrett::SafetyModule::ACTIVE);
+        //debugging_biotac_pub_.reset(new realtime_tools::RealtimePublisher<biotac_sensors::BioTacHand>(ros::NodeHandle("debugging_biotac_states"), "biotac_msg", 10));
 
         return true;
     }
@@ -442,10 +437,17 @@ namespace barrett_hw
 
         // Collect biotac batch data from each cheetah 
         // TODO what if there are more than one cheetah device ?
-        if ((joint_states_to_biotac_counter_++) == 4 && tactile_sensors_exist_) // Biotac can only collect data as fast as 100hz
+        if ((++joint_states_to_biotac_counter_) == 4 && tactile_sensors_exist_) // Biotac can only collect data as fast as 100hz
         {
+            joint_states_to_biotac_counter_ = 0;
             biotac_devices_->bt_hand_msg = biotac_devices_->interface->collectBatch();
-            biotac_devices_->assign_value();
+            /*
+            if (debugging_biotac_pub_->trylock())
+            {
+                debugging_biotac_pub_->msg_ = biotac_devices_->bt_hand_msg;                    
+            }
+            debugging_biotac_pub_->unlockAndPublish();
+            */
         }
         
         return true;

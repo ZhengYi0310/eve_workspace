@@ -98,57 +98,11 @@ namespace barrett_hw
                 boost::shared_ptr<biotac::BioTacHandClass> interface;
                 biotac_sensors::BioTacHand bt_hand_msg;
 
-                std::vector<std::string> bt_serial_vec;
-                std::vector<unsigned int> bt_position_vec;
-                std::vector<unsigned int> tdc_data_vec;
-                std::vector<unsigned int> tac_data_vec;
-                std::vector<unsigned int> pdc_data_vec;
-                std::vector<std::vector<size_t> > pac_data_array;
-                std::vector<std::vector<size_t> > electrode_data_array;
-
                 void reset()
                 {
-                    std::fill(bt_serial_vec.begin(), bt_serial_vec.end(), "");
-                    
-                    std::fill(bt_position_vec.begin(), bt_position_vec.end(), 0);
-                    std::fill(tdc_data_vec.begin(), tdc_data_vec.end(), 0);
-                    std::fill(tac_data_vec.begin(), tac_data_vec.end(), 0);
-                    std::fill(pdc_data_vec.begin(), pdc_data_vec.end(), 0);
-                    
-                    for (size_t i = 0; i < pac_data_array.size(); i++)
-                    {
-                        std::fill(pac_data_array[i].begin(), pac_data_array[i].end(), 0);
-                    }
-
-                    for (size_t i = 0; i < electrode_data_array.size(); i++)
-                    {
-                        std::fill(electrode_data_array[i].begin(), electrode_data_array[i].end(), 0);
-                    }
-                    
+                    biotac_sensors::BioTacHand new_biotac_hand;
+                    bt_hand_msg = new_biotac_hand;                    
                     ROS_INFO("Every field for the BioTacDevices structure is reset!");
-                }
-
-                void assign_value()
-                {   
-                    
-                    for (size_t i = 0; i < bt_hand_msg.bt_data.size(); i++)
-                    {
-
-                        bt_serial_vec.push_back(bt_hand_msg.bt_data[i].bt_serial);
-                        bt_position_vec.push_back(bt_hand_msg.bt_data[i].bt_position);
-                        tdc_data_vec.push_back(bt_hand_msg.bt_data[i].tdc_data);
-                        tac_data_vec.push_back(bt_hand_msg.bt_data[i].tac_data);
-                        pdc_data_vec.push_back(bt_hand_msg.bt_data[i].pdc_data);
-                        
-                        std::vector<size_t> temp_pac;
-                        temp_pac.assign(bt_hand_msg.bt_data[i].pac_data.begin(), bt_hand_msg.bt_data[i].pac_data.end());
-                        pac_data_array.push_back(temp_pac);
-
-                        std::vector<size_t> temp_elec;
-                        temp_elec.assign(bt_hand_msg.bt_data[i].electrode_data.begin(), bt_hand_msg.bt_data[i].electrode_data.end());
-                        electrode_data_array.push_back(temp_elec);
-                    }
-                    
                 }
             };
 
@@ -272,6 +226,7 @@ namespace barrett_hw
             size_t joint_states_to_biotac_counter_;
             bool verbose_; // To decide if print out the real time publishing status
 
+            boost::shared_ptr<realtime_tools::RealtimePublisher<biotac_sensors::BioTacHand> > debugging_biotac_pub_;
         protected:
 
             template<size_t DOF>
