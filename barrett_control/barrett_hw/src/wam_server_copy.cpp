@@ -142,8 +142,8 @@ namespace barrett_hw
                     ROS_INFO("Collect the first batch and assign biotac values ...");
                     biotac_devices_->bt_hand_msg = biotac_devices_->interface->collectBatch();
                     ROS_INFO("Register biotac state handles for the biotac hardware interface.");
-            
-                     
+                    barrett_model::BiotacHandStateHandle biotac_hand_state_handle(biotac_devices_->bt_hand_msg.hand_id, &(*(biotac_devices_->interface)));
+                    /* 
                     for (int i = 0; i < (int)(biotac_devices_->bt_hand_msg).bt_data.size(); i++)
                     {
                         barrett_model::BiotacFingerStateHandle biotac_finger_state_handle((biotac_devices_->bt_hand_msg).bt_data[i].bt_serial, &((biotac_devices_->bt_hand_msg).bt_data[i]));
@@ -152,6 +152,7 @@ namespace barrett_hw
 
                         ROS_INFO("Create and register handle for the >%i th< biotac sensor, with serial number >%s<, on cheetah position >%i<", (i + 1), (biotac_devices_->bt_hand_msg).bt_data[i].bt_serial.c_str(), (biotac_devices_->bt_hand_msg).bt_data[i].bt_position);
                     }
+                    */
                     
             
                 }
@@ -174,7 +175,7 @@ namespace barrett_hw
         // Register biotac state interface 
         if (tactile_sensors_exist_)
         {
-            this->registerInterface(&biotac_fingers_interface_);
+            this->registerInterface(&biotac_hand_interface_);
         }
         
 
@@ -299,6 +300,7 @@ namespace barrett_hw
         wam_device->kdl_twist_measured_ = KDL::Twist::Zero();
         barrett_model::ArmPoseStatesHandle arm_pose_states_handle(product_type, &(wam_device->root_seg_name), &(wam_device->kdl_pose_measured_), &(wam_device->kdl_twist_measured_));
         arm_pose_state_interface_.registerHandle(arm_pose_states_handle);
+        
                 
         boost::shared_ptr<const urdf::Joint> joint = urdf_model_.getJoint(wam_device->tip_joint_name);
 
@@ -440,7 +442,8 @@ namespace barrett_hw
         if ((++joint_states_to_biotac_counter_) == 4 && tactile_sensors_exist_) // Biotac can only collect data as fast as 100hz
         {
             joint_states_to_biotac_counter_ = 0;
-            biotac_devices_->bt_hand_msg = biotac_devices_->interface->collectBatch();
+            // Don't put the collectBatch() in the main rt thread, it's messing up the rt performance
+            //biotac_devices_->bt_hand_msg = biotac_devices_->interface->collectBatch();
             /*
             if (debugging_biotac_pub_->trylock())
             {

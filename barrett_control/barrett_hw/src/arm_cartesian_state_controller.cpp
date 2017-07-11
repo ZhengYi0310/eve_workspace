@@ -25,12 +25,13 @@ namespace arm_cartesian_state_controller
             ROS_ERROR("Parameter 'publish_rate' not set!");
             return false;
         }
-
+        /*
         if (!controller_nh.getParam("visualization", visualization_))
         {
             ROS_ERROR("Parameter 'visualization' not set!");
             return false;
         }
+        */
 
         // realtime publisher 
         realtime_pub_.reset(new realtime_tools::RealtimePublisher<barrett_hw::robot_cartesian_state>(root_nh, "robot_cartesian_state", 10));

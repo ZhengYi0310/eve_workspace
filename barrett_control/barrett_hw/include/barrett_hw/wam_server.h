@@ -9,6 +9,7 @@
 #define _WAM_SERVER_H
 #define EIGEN2_SUPPORT
 #define EIGEN2_SUPPORT_STAGE40_FULL_EIGEN3_STRICTNESS
+#define BARRETT_XENOMAI
 
 #include <unistd.h>
 #include <ros/ros.h>
@@ -100,8 +101,7 @@ namespace barrett_hw
 
                 void reset()
                 {
-                    biotac_sensors::BioTacHand new_biotac_hand;
-                    bt_hand_msg = new_biotac_hand;                    
+                    interface.reset(new biotac::BioTacHandClass("left_hand_biotacs"));       
                     ROS_INFO("Every field for the BioTacDevices structure is reset!");
                 }
             };
@@ -205,7 +205,7 @@ namespace barrett_hw
             hardware_interface::EffortJointInterface effort_interface_;
             hardware_interface::VelocityJointInterface velocity_interface_;
             barrett_model::SemiAbsoluteJointInterface semi_absolute_interface_;
-            barrett_model::BiotacFingerStateInterface biotac_fingers_interface_;
+            barrett_model::BiotacHandStateInterface biotac_hand_interface_;
             barrett_model::ArmPoseStatesInterface arm_pose_state_interface_;
 
             // Vectors of various barrett structures 

@@ -52,7 +52,7 @@ namespace arm_cartesian_state_controller
         //boost::shared_ptr<realtime_tools::RealtimePublisher<visualization_msgs::MarkerArray> > visualization_realtime_pub_;
         ros::Time last_publish_time_;
         double publish_rate_;
-        bool visualization_;
+        //bool visualization_;
         unsigned int num_devices_;
         geometry_msgs::Twist twist_;
         geometry_msgs::Pose pose_;

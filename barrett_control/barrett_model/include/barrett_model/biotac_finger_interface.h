@@ -14,6 +14,8 @@
 #include <boost/shared_ptr.hpp>
 
 #include <hardware_interface/internal/hardware_resource_manager.h>
+
+#include <biotac_sensors/biotac_hand_class.h>
 #include <biotac_sensors/BioTacHand.h>
 #include <biotac_sensors/BioTacData.h>
 #include <biotac_sensors/BioTacTime.h>
@@ -27,44 +29,30 @@
 namespace barrett_model
 {
     /** A handle used to read the state of a biotac sensor or a hand ??. */
-    class BiotacFingerStateHandle 
+    class BiotacHandStateHandle 
     {
         public:
-            BiotacFingerStateHandle() : bt_serial_(""), bt_data_(NULL)
+            BiotacHandStateHandle() : bt_hand_id_(""), bt_hand_(NULL)
             {}; //TODO:: think about if add biotac time info 
 
             
-            BiotacFingerStateHandle(const std::string& bt_serial, const biotac_sensors::BioTacData* bt_data) : bt_serial_(bt_serial)
+            BiotacHandStateHandle(const std::string& bt_hand_id, const biotac::BioTacHandClass* bt_hand) : bt_hand_id_(bt_hand_id)
             {
-                if (!bt_data)
+                if (!bt_hand)
                 {
-                    throw hardware_interface::HardwareInterfaceException("Cannot create handle '" + bt_serial + "'. Biotac data pointer is null.");
+                    throw hardware_interface::HardwareInterfaceException("Cannot create handle '" + bt_hand_id + "'. Biotac hand class pointer is null.");
                 }
 
-                // check the sizes are equal 
-                assert((bt_data->pac_data).size() == NUM_PAC_DATA);
-                assert((bt_data->electrode_data).size() == NUM_ELECTRODE_DATA);
-
-                bt_data_ = bt_data;
+                bt_hand_ = bt_hand;
             }
 
-            std::string getName() const {return bt_serial_;}
+            std::string getName() const {return bt_hand_id_;}
 			
-			biotac_sensors::BioTacData getCompleteData() const {assert(bt_data_); return *bt_data_;}
-			std::string getBtSerial() const {assert(bt_data_); assert(bt_serial_ == bt_data_->bt_serial); return bt_data_->bt_serial;}
-            uint16_t getBtPosition() const {assert(bt_data_); return bt_data_->bt_position;}
-            uint16_t getTDCData() const {assert(bt_data_); return bt_data_->tdc_data;}
-            uint16_t getTACData() const {assert(bt_data_); return bt_data_->tac_data;}
-            uint16_t getPDCData() const {assert(bt_data_); return bt_data_->pdc_data;}
-			uint16_t getPACDataWithIndex(size_t index) {assert(bt_data_); assert((index >= 0) && (index < 22)); return (bt_data_->pac_data)[index];}
-            uint16_t getElectrodeDataWithIndex(size_t index) {assert(bt_data_); assert((index >= 0) && (index < 19)); return (bt_data_->electrode_data)[index];}
-
-            //std::vector<uint16_t> getPACData() const {assert(bt_data_); return bt_data_->pac_data;}
-            //std::vector<uint16_t> getElectrodeData() const {assert(bt_data_); return bt_data_->electrode_data;}
+			biotac::BioTacHandClass getBioTacHand() const {assert(bt_hand_); return *bt_hand_;}
 
         private:
-            std::string bt_serial_;
-			const biotac_sensors::BioTacData* bt_data_;
+            std::string bt_hand_id_;
+			const biotac::BioTacHandClass* bt_hand_;
     };
 
     /** \brief Hardware interface to support reading the state of an array of joints
@@ -74,6 +62,6 @@ namespace barrett_model
      * torque).
      *
      */
-     class BiotacFingerStateInterface : public hardware_interface::HardwareResourceManager<BiotacFingerStateHandle> {};
+     class BiotacHandStateInterface : public hardware_interface::HardwareResourceManager<BiotacHandStateHandle> {};
 }
 #endif
