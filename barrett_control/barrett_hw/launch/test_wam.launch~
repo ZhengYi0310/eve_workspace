@@ -71,7 +71,7 @@
 
   <node name="default_controller_spawner"
     pkg="controller_manager" type="spawner" output="screen"
-    args="wam/joint_state_controller wam/arm_cartesian_state_controller"/>
+    args="wam/joint_state_controller wam/biotac_state_controller wam/arm_cartesian_state_controller"/>
 
 
 </launch>

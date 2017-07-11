@@ -49,7 +49,7 @@ namespace arm_cartesian_state_controller
         private:
         std::vector<barrett_model::ArmPoseStatesHandle> arm_cartesian_state_handle_;
         boost::shared_ptr<realtime_tools::RealtimePublisher<barrett_hw::robot_cartesian_state> > realtime_pub_;
-        boost::shared_ptr<realtime_tools::RealtimePublisher<visualization_msgs::MarkerArray> > visualization_realtime_pub_;
+        //boost::shared_ptr<realtime_tools::RealtimePublisher<visualization_msgs::MarkerArray> > visualization_realtime_pub_;
         ros::Time last_publish_time_;
         double publish_rate_;
         bool visualization_;

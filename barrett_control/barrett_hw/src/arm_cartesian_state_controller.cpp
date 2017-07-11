@@ -34,7 +34,7 @@ namespace arm_cartesian_state_controller
 
         // realtime publisher 
         realtime_pub_.reset(new realtime_tools::RealtimePublisher<barrett_hw::robot_cartesian_state>(root_nh, "robot_cartesian_state", 10));
-        visualization_realtime_pub_.reset(new realtime_tools::RealtimePublisher<visualization_msgs::MarkerArray>(root_nh, "robot_cartesian_state_visualization", 10));
+        //visualization_realtime_pub_.reset(new realtime_tools::RealtimePublisher<visualization_msgs::MarkerArray>(root_nh, "robot_cartesian_state_visualization", 10));
         // allocate messages  get the topname space
         for (size_t i = 0; i < num_devices_; i++)
         {
@@ -42,7 +42,8 @@ namespace arm_cartesian_state_controller
             barrett_hw::arm_cartesian_state arm_cartesian_state;
             realtime_pub_->msg_.robot_cartesian_state.push_back(arm_cartesian_state);
             robot_cartesian_state_.robot_cartesian_state.push_back(arm_cartesian_state);
-
+            
+            /*
             if (visualization_)
             {
                 visualization_msgs::Marker marker;
@@ -61,6 +62,7 @@ namespace arm_cartesian_state_controller
                 visualization_realtime_pub_->msg_.markers[i].color.b = 1.0f;
                 visualization_realtime_pub_->msg_.markers[i].color.a = 0.5;
             }
+            */
         }
         return true;
     }
@@ -74,8 +76,8 @@ namespace arm_cartesian_state_controller
     {
         if (publish_rate_ > 0.0 && last_publish_time_ + ros::Duration(1.0 / publish_rate_) < time)
         {
-            // try to publish 
-            if (realtime_pub_->trylock() && visualization_realtime_pub_->trylock())
+            // try to publish
+            if (realtime_pub_->trylock())
             {
                 // Increment the time since we are acutally publishing 
                 last_publish_time_ = last_publish_time_ + ros::Duration(1.0 / publish_rate_);
@@ -90,7 +92,7 @@ namespace arm_cartesian_state_controller
                     robot_cartesian_state_.robot_cartesian_state[i].Twist = twist_;
                     robot_cartesian_state_.robot_cartesian_state[i].Pose = pose_;
                     realtime_pub_->msg_.robot_cartesian_state[i] = robot_cartesian_state_.robot_cartesian_state[i];
-
+                    /*
                     if (visualization_)
                     {
                         visualization_realtime_pub_->msg_.markers[i].header.stamp = time;
@@ -105,12 +107,15 @@ namespace arm_cartesian_state_controller
                         visualization_realtime_pub_->msg_.markers[i].pose.orientation.z = pose_.orientation.z;
                         visualization_realtime_pub_->msg_.markers[i].pose.orientation.w = pose_.orientation.w;
                     }
+                    */
                 }
                 realtime_pub_->unlockAndPublish();
+                /*
                 if (visualization_)
                 {
                     visualization_realtime_pub_->unlockAndPublish();
                 }
+                */
             }
         }
     }
