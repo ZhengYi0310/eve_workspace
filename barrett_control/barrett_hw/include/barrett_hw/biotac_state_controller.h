@@ -12,8 +12,10 @@
 #include <pluginlib/class_list_macros.h>
 #include <realtime_tools/realtime_publisher.h>
 
-#include <barrett_model/biotac_finger_interface.h>
+#include <hardware_interface/joint_state_interface.h>
+#include <boost/shared_ptr.hpp>
 
+#include <biotac_sensors/biotac_hand_class.h>
 #include <biotac_sensors/BioTacData.h>
 #include <biotac_sensors/BioTacHand.h>
 #include <biotac_sensors/BioTacTime.h>
@@ -32,21 +34,20 @@ namespace biotac_state_controller
      *   publish_rate: 50
      * \endcode
      */
-    class BioTacStateController : public controller_interface::Controller<barrett_model::BiotacFingerStateInterface>
+    class BioTacStateController : public controller_interface::Controller<hardware_interface::JointStateInterface>
     {
         public:
-            BioTacStateController() : publish_rate_(0) {};
-            virtual bool init(barrett_model::BiotacFingerStateInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controller_nh);
+            BioTacStateController() : publish_rate_(0.0) {};
+            virtual bool init(hardware_interface::JointStateInterface* /*hw*/, ros::NodeHandle& root_nh, ros::NodeHandle& controller_nh);
             virtual void starting(const ros::Time& time);
             virtual void update(const ros::Time& time, const ros::Duration& /*period*/);
             virtual void stopping(const ros::Time& /*time*/);
 
         private:
-            std::vector<barrett_model::BiotacFingerStateHandle> biotac_state_;
+            boost::shared_ptr<biotac::BioTacHandClass> biotac_hand_;
             boost::shared_ptr<realtime_tools::RealtimePublisher<biotac_sensors::BioTacHand> > realtime_pub_;
             ros::Time last_publish_time_;
             double publish_rate_;
-            unsigned int num_biotac_fingers_; /// Number of biotac fingers present in the BiotacFingerStateInterface
     };
 }
 

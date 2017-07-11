@@ -93,19 +93,6 @@ namespace barrett_hw
 
             void set_mode(barrett::SafetyModule::SafetyMode mode);
 
-            // State structure for the BioTacHand 
-            struct BioTacDevices 
-            {
-                boost::shared_ptr<biotac::BioTacHandClass> interface;
-                biotac_sensors::BioTacHand bt_hand_msg;
-
-                void reset()
-                {
-                    interface.reset(new biotac::BioTacHandClass("left_hand_biotacs"));       
-                    ROS_INFO("Every field for the BioTacDevices structure is reset!");
-                }
-            };
-
             // State structure for the hand 
             struct HandDevice
             {
@@ -213,10 +200,6 @@ namespace barrett_hw
             Wam4Map wam4s_;
             Wam7Map wam7s_;
             HandMap hands_;
-
-            // biotac sensor devices structure 
-            // TODO what to do if there are more than 1 cheetah ?
-            boost::shared_ptr<BioTacDevices> biotac_devices_;
 
             //barrett::jp_type jp_home;
             barrett::systems::Ramp ramp;

@@ -128,34 +128,8 @@ namespace barrett_hw
             }
             else if(product_type == "hand")
             {
-                //bring up the biotac from here Maybe !!!!!!!!!!!!!!!!!**********************
                 param::require(product_nh, "tactile", tactile_sensors_exist_, "Whether biotac sensors exist and need to be initialized.");
-
-                //only bringup the biotacs when "tactile is set to true"
-                if (tactile_sensors_exist_)
-                {
-                    //boost::shared_ptr<BarrettHW::BioTacDevices> biotac_devices(new BarrettHW::BioTacDevices());
-                    biotac_devices_.reset(new BarrettHW::BioTacDevices());
-                    biotac_devices_->interface.reset(new biotac::BioTacHandClass("left_hand_biotacs"));
-                    biotac_devices_->interface->initBioTacSensors();
-
-                    ROS_INFO("Collect the first batch and assign biotac values ...");
-                    biotac_devices_->bt_hand_msg = biotac_devices_->interface->collectBatch();
-                    ROS_INFO("Register biotac state handles for the biotac hardware interface.");
-                    barrett_model::BiotacHandStateHandle biotac_hand_state_handle(biotac_devices_->bt_hand_msg.hand_id, &(*(biotac_devices_->interface)));
-                    /* 
-                    for (int i = 0; i < (int)(biotac_devices_->bt_hand_msg).bt_data.size(); i++)
-                    {
-                        barrett_model::BiotacFingerStateHandle biotac_finger_state_handle((biotac_devices_->bt_hand_msg).bt_data[i].bt_serial, &((biotac_devices_->bt_hand_msg).bt_data[i]));
-                        biotac_fingers_interface_.registerHandle(biotac_finger_state_handle);
-
-
-                        ROS_INFO("Create and register handle for the >%i th< biotac sensor, with serial number >%s<, on cheetah position >%i<", (i + 1), (biotac_devices_->bt_hand_msg).bt_data[i].bt_serial.c_str(), (biotac_devices_->bt_hand_msg).bt_data[i].bt_position);
-                    }
-                    */
-                    
-            
-                }
+                
                 //ROS_ERROR_STREAM("Look ma, no hands!");
             }
             else 
@@ -392,13 +366,6 @@ namespace barrett_hw
             return false;
         }
         
-        // Reset all biotac sensor states 
-        if (tactile_sensors_exist_)
-        {
-            biotac_devices_->reset();
-        }
-        
-
         // Zero the state 
         for (Wam4Map::iterator it = wam4s_.begin(); it != wam4s_.end(); it++)
         {
@@ -411,7 +378,6 @@ namespace barrett_hw
 
         // Wait for the system to become ACTIVE 
         this->wait_for_mode(barrett::SafetyModule::ACTIVE);
-        //debugging_biotac_pub_.reset(new realtime_tools::RealtimePublisher<biotac_sensors::BioTacHand>(ros::NodeHandle("debugging_biotac_states"), "biotac_msg", 10));
 
         return true;
     }
@@ -436,22 +402,6 @@ namespace barrett_hw
         {
             this->read_wam(time, period, it->second);
         }
-
-        // Collect biotac batch data from each cheetah 
-        // TODO what if there are more than one cheetah device ?
-        if ((++joint_states_to_biotac_counter_) == 4 && tactile_sensors_exist_) // Biotac can only collect data as fast as 100hz
-        {
-            joint_states_to_biotac_counter_ = 0;
-            // Don't put the collectBatch() in the main rt thread, it's messing up the rt performance
-            //biotac_devices_->bt_hand_msg = biotac_devices_->interface->collectBatch();
-            /*
-            if (debugging_biotac_pub_->trylock())
-            {
-                debugging_biotac_pub_->msg_ = biotac_devices_->bt_hand_msg;                    
-            }
-            debugging_biotac_pub_->unlockAndPublish();
-            */
-        }
         
         return true;
     }
@@ -474,8 +424,9 @@ namespace barrett_hw
     {
         BARRETT_UNITS_TEMPLATE_TYPEDEFS(DOF);    
         
-        //TODO think about this, do we need to update the hardware in the main thread ?
+        //TODO seems like not a good idea here, update() and collect batch together will mess up the rt_performance
         // Poll the hardware
+        /*
         try 
         {
             //(&(device->interface))->update();
@@ -493,6 +444,7 @@ namespace barrett_hw
                 throw;
             }
         }
+        */
         
         // Get raw state 
         //Eigen::Matrix<double, DOF, 1> 

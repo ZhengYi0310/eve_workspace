@@ -12,16 +12,8 @@
 
 namespace biotac_state_controller 
 {
-    bool BioTacStateController::init(barrett_model::BiotacFingerStateInterface* hw, ros::NodeHandle& root_nh, ros::NodeHandle& controller_nh)
+    bool BioTacStateController::init(hardware_interface::JointStateInterface* /*hw*/, ros::NodeHandle& root_nh, ros::NodeHandle& controller_nh)
     {
-        // get all serial numbers from the hardware interface 
-        const std::vector<std::string>& serial_numbers = hw->getNames();
-        num_biotac_fingers_ = serial_numbers.size();
-        for (size_t i = 0; i < num_biotac_fingers_; i++)
-        {
-            ROS_INFO("Got biotac sensor %s", serial_numbers[i].c_str());
-        }
-
         // get the publish period 
         if (!controller_nh.getParam("publish_rate", publish_rate_))
         {
@@ -29,22 +21,10 @@ namespace biotac_state_controller
             return false;
         }
 
-        // realtime publisher 
+        biotac_hand_.reset(new biotac::BioTacHandClass("left_hand_biotacs")); 
         realtime_pub_.reset(new realtime_tools::RealtimePublisher<biotac_sensors::BioTacHand>(root_nh, "biotac_states", 4));
 
-        // get biotac finger and allocate message 
-        biotac_sensors::BioTacHand bt_hand_msg;
-        biotac_sensors::BioTacData bt_data_msg;
-        biotac_sensors::BioTacTime bt_time_msg;
-        for (size_t i = 0; i < num_biotac_fingers_; i++)
-        {
-            biotac_state_.push_back(hw->getHandle(serial_numbers[i]));
-            realtime_pub_->msg_.bt_data.push_back(bt_data_msg);
-        }
-        realtime_pub_->msg_.header = bt_hand_msg.header;
-        realtime_pub_->msg_.hand_id = bt_hand_msg.hand_id;
-        realtime_pub_->msg_.bt_time = bt_time_msg;
-
+        biotac_hand_->initBioTacSensors();
         return true;
     }
 
@@ -62,36 +42,9 @@ namespace biotac_state_controller
             // try to publish 
             if (realtime_pub_->trylock())
             {
-                // increment time since we're actually publishing 
+                // increment time since we're actually publishing
                 last_publish_time_ = last_publish_time_ + ros::Duration(1.0 / publish_rate_);
-                // populate the biotac fingers present in BioTacFingerStateInterface, i.e. indices [0, num_biotac_fingers)
-                realtime_pub_->msg_.header.stamp = time;
-                for (size_t i = 0; i < num_biotac_fingers_; i++)
-                {
-                    
-                    // assign the bitac data first 
-                    biotac_sensors::BioTacData bt_data;
-                    /*
-                    bt_data.bt_serial = biotac_state_[i].getBtSerial();
-                    bt_data.bt_position = biotac_state_[i].getBtPosition();
-                    bt_data.tdc_data = biotac_state_[i].getTDCData();
-                    bt_data.tac_data = biotac_state_[i].getTACData();
-                    bt_data.pdc_data = biotac_state_[i].getPDCData();
-                    */
-                    /* 
-                    for (size_t j = 0; j < 22; j++)
-                    {
-                        bt_data.pac_data[j] = static_cast<uint16_t>((biotac_state_[i].getPACDataWithIndex(j)));
-                    }
-                    
-                    for (size_t j = 0; j < 19; j++)
-                    {
-                        bt_data.electrode_data[j] = static_cast<uint16_t>((biotac_state_[i].getElectrodeDataWithIndex(j)));
-                    }
-                    */
-                    bt_data = biotac_state_[i].getCompleteData();
-                    realtime_pub_->msg_.bt_data[i] = bt_data;
-                }
+                realtime_pub_->msg_ = biotac_hand_->collectBatch();
                 realtime_pub_->unlockAndPublish();
             }
         }
