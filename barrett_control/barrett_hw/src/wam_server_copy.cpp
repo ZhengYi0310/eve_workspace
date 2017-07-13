@@ -144,8 +144,8 @@ namespace barrett_hw
         this->registerInterface(&effort_interface_);
         this->registerInterface(&semi_absolute_interface_);
         this->registerInterface(&arm_pose_state_interface_);
-
-        
+        // Register the hardware interface for the robot publisher 
+        this->registerInterface(&robot_state_interface_);
         // Register biotac state interface 
         if (tactile_sensors_exist_)
         {
@@ -324,7 +324,9 @@ namespace barrett_hw
                 &wam_device->resolver_angles(i),
                 &wam_device->joint_offsets(i),
                 &wam_device->calibrated_joints(i));
-        } 
+        }
+        barrett_model::RobotStateHandle robot_state_handle(product_nh.getNamespace(), &state_interface_, &arm_pose_state_interface_);
+        robot_state_interface_.registerHandle(robot_state_handle);
 
         barrett_manager->getExecutionManager()->startManaging(ramp); //starting ramp manager
 
@@ -449,9 +451,20 @@ namespace barrett_hw
         // Get raw state 
         //Eigen::Matrix<double, DOF, 1> 
         const jp_type raw_positions = (device->Wam->getLowLevelWam()).getJointPositions();
+        //const jt_type raw_torques;
         //Eigen::Matrix<double, DOF, 1> 
         jv_type raw_velocities;
-
+        /*
+        {
+            BARRETT_SCOPED_LOCK(device->Wam->getEmMutex());
+            {
+                if ((device->Wam->input).valueDefined())
+                {
+                    raw_torques = (device->Wam->input).getValue();
+                }
+            }
+        }
+        */
         {
             BARRETT_SCOPED_LOCK(device->Wam->getEmMutex());
             {

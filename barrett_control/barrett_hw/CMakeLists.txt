@@ -17,8 +17,11 @@ if(Xenomai_FOUND)
   add_message_files(DIRECTORY msg FILES
   		arm_cartesian_state.msg
         robot_cartesian_state.msg
+		robot_states_tactile.msg
+  		robot_states_no_tactile.msg
   )
   generate_messages(DEPENDENCIES
+  biotac_sensors
   geometry_msgs
   std_msgs
   visualization_msgs
@@ -43,20 +46,28 @@ if(Xenomai_FOUND)
 
   add_library(biotac_state_controller src/biotac_state_controller.cpp)
   target_link_libraries(biotac_state_controller xenomai native rtdm ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
+
   add_library(arm_cartesian_state_controller src/arm_cartesian_state_controller.cpp )
   target_link_libraries(arm_cartesian_state_controller xenomai native rtdm ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
+
+  add_library(robot_states_publisher src/robot_states_publisher.cpp )
+  target_link_libraries(robot_states_publisher xenomai native rtdm ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
+
   add_library(wam_server_lib src/wam_server_copy.cpp)
   target_link_libraries(wam_server_lib xenomai native rtdm ${BARRETT_LIBRARIES} ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 
   #add_definitions(-D__XENO__)
   add_executable(wam_server src/wam_server_copy.cpp)
   target_link_libraries(wam_server xenomai native rtdm ${BARRETT_LIBRARIES} ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
+  add_dependencies(wam_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
   add_executable(wam_server_ll src/wam_server_ll.cpp)
   target_link_libraries(wam_server_ll xenomai native rtdm ${BARRETT_LIBRARIES} ${catkin_LIBRARIES})
+  add_dependencies(wam_server_ll ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
   add_executable(check_kdl_parser src/check_kdl_parser.cpp )
   target_link_libraries(check_kdl_parser wam_server_lib xenomai native rtdm ${BARRETT_LIBRARIES} ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
+  add_dependencies(check_kdl_parser ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
   ## Generate added messages and services with any dependencies listed here
   # TODO: fill in what other packages will need to use this package

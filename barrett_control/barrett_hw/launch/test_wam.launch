@@ -67,11 +67,16 @@
     biotac_state_controller:
       type: barrett_hw/BioTacStateController
       publish_rate: 50
+    robot_states_publisher:
+      type: barrett_hw/RobotStatesPublisher
+      publish_rate: 50
+      tactile: true
+
   </rosparam>
 
   <node name="default_controller_spawner"
     pkg="controller_manager" type="spawner" output="screen"
-    args="wam/joint_state_controller wam/arm_cartesian_state_controller wam/biotac_state_controller"/>
+    args="wam/joint_state_controller wam/robot_states_publisher"/>
 
 
 </launch>

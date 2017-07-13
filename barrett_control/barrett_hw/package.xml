@@ -62,5 +62,6 @@
   <export>
 	  <controller_interface plugin="${prefix}/arm_cartesian_state_plugin.xml"/>
       <controller_interface plugin="${prefix}/biotac_state_plugin.xml"/>
+      <controller_interface plugin="${prefix}/robot_states_plugin.xml"/>
   </export>
 </package>
