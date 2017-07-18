@@ -32,14 +32,22 @@ namespace robot_states_publisher
             ROS_INFO("Get a robot with name >>%s<<.", robot_names[i].c_str());
             robot_state_handle_.push_back(hw->getHandle(robot_names[i]));
         }
+
+        realtime_pub_joint_states_.reset(new realtime_tools::RealtimePublisher<sensor_msgs::JointState>(root_nh, "joint_states", 10));
         const std::vector<std::string>& joint_names = (hw->getHandle(robot_names[0])).getJointStateInterface().getNames();
         num_joints_ = joint_names.size();
         for (int i = 0; i < num_joints_; i++)
         {
             ROS_INFO("The robot has a joint with name >>%s<<.", joint_names[i].c_str());
             joint_state_handles_.push_back((hw->getHandle(robot_names[0])).getJointStateInterface().getHandle(joint_names[i]));
-        }
 
+            realtime_pub_joint_states_->msg_.name.push_back(joint_names[i]);
+            realtime_pub_joint_states_->msg_.position.push_back(0.0);
+            realtime_pub_joint_states_->msg_.velocity.push_back(0.0);
+            realtime_pub_joint_states_->msg_.effort.push_back(0.0);
+        }
+        
+        realtime_pub_cartesian_states_.reset(new realtime_tools::RealtimePublisher<barrett_hw::arm_cartesian_state>(root_nh, "cartesian_pose", 10));
         const std::vector<std::string>& cartesian_pose_names = (hw->getHandle(robot_names[0])).getArmPoseStatesInterface().getNames();
         num_cartesian_pose_ = cartesian_pose_names.size();
         for (int i = 0; i < num_cartesian_pose_; i++)
@@ -52,33 +60,11 @@ namespace robot_states_publisher
 
         if (biotac_sensors_exist_)
         {
-            realtime_pub_tactile_.reset(new realtime_tools::RealtimePublisher<barrett_hw::robot_states_tactile>(root_nh, "robot_states_tactile", 10));
-            realtime_pub_tactile_->msg_.base_frame =  arm_cartesian_state_handles_[0].getBaseFrame(); 
-            for (int i = 0; i < num_joints_; i++)
-            {
-                realtime_pub_tactile_->msg_.joint_names.push_back(joint_names[i]);
-                realtime_pub_tactile_->msg_.joint_positions.push_back(0.0);
-                realtime_pub_tactile_->msg_.joint_velocities.push_back(0.0);
-                realtime_pub_tactile_->msg_.joint_efforts.push_back(0.0);                
-            }
+            realtime_pub_biotac_hand_.reset(new realtime_tools::RealtimePublisher<biotac_sensors::BioTacHand>(root_nh, "biotac_sensors", 10));
             biotac_hand_.reset(new biotac::BioTacHandClass("left_hand_biotacs"));
             biotac_hand_->initBioTacSensors();
         }
-        else 
-        {
-            realtime_pub_no_tactile_.reset(new realtime_tools::RealtimePublisher<barrett_hw::robot_states_no_tactile>(root_nh, "robot_states_no_tactile", 10));
-            realtime_pub_no_tactile_->msg_.base_frame =  arm_cartesian_state_handles_[0].getBaseFrame(); 
-            for (int i = 0; i < num_joints_; i++)
-            {
-                realtime_pub_no_tactile_->msg_.joint_names.push_back(joint_names[i]);
-                realtime_pub_no_tactile_->msg_.joint_positions.push_back(0.0);
-                realtime_pub_no_tactile_->msg_.joint_velocities.push_back(0.0);
-                realtime_pub_no_tactile_->msg_.joint_efforts.push_back(0.0);
-            }
-            
-        }
-
-
+        
         return true;
     }
 
@@ -93,42 +79,41 @@ namespace robot_states_publisher
         if (publish_rate_ > 0.0 && last_publish_time_ + ros::Duration(1.0 / publish_rate_) < time)
         {
             last_publish_time_ = last_publish_time_ + ros::Duration(1.0 / publish_rate_);
-            if (!biotac_sensors_exist_)
+
+            ros::Time duration((time - controller_start_time_).toSec());
+            
+            if (realtime_pub_joint_states_->trylock())
             {
-                if (realtime_pub_no_tactile_->trylock())
+                realtime_pub_joint_states_->msg_.header.stamp = duration;
+                //tf::poseKDLToMsg(arm_cartesian_state_handles_[0].getPose(),  realtime_pub_no_tactile_->msg_.Pose);
+                //tf::twistKDLToMsg(arm_cartesian_state_handles_[0].getTwist(), realtime_pub_no_tactile_->msg_.Twist);
+                for (int i = 0; i < num_joints_; i++)
                 {
-                    ros::Time duration((time - controller_start_time_).toSec());
-                    realtime_pub_no_tactile_->msg_.header.stamp = duration;
-                    tf::poseKDLToMsg(arm_cartesian_state_handles_[0].getPose(),  realtime_pub_no_tactile_->msg_.Pose);
-                    tf::twistKDLToMsg(arm_cartesian_state_handles_[0].getTwist(), realtime_pub_no_tactile_->msg_.Twist);
-                    for (int i = 0; i < num_joints_; i++)
-                    {
-                        realtime_pub_no_tactile_->msg_.joint_positions[i] = joint_state_handles_[i].getPosition();
-                        realtime_pub_no_tactile_->msg_.joint_velocities[i] = joint_state_handles_[i].getVelocity();
-                        realtime_pub_no_tactile_->msg_.joint_efforts[i] = joint_state_handles_[i].getEffort();
-                    }
-                    realtime_pub_no_tactile_->unlockAndPublish();
+                    realtime_pub_joint_states_->msg_.position[i] = joint_state_handles_[i].getPosition();
+                    realtime_pub_joint_states_->msg_.velocity[i] = joint_state_handles_[i].getVelocity();
+                    realtime_pub_joint_states_->msg_.effort[i] = joint_state_handles_[i].getEffort();
                 }
+                realtime_pub_joint_states_->unlockAndPublish();                
             }
-            else 
+
+            if (realtime_pub_cartesian_states_->trylock())
             {
-                if (realtime_pub_tactile_->trylock())
+                realtime_pub_cartesian_states_->msg_.header.stamp = duration;
+                realtime_pub_cartesian_states_->msg_.base_frame = arm_cartesian_state_handles_[0].getBaseFrame();
+                tf::poseKDLToMsg(arm_cartesian_state_handles_[0].getPose(),  realtime_pub_cartesian_states_->msg_.Pose);
+                tf::twistKDLToMsg(arm_cartesian_state_handles_[0].getTwist(), realtime_pub_cartesian_states_->msg_.Twist);
+                realtime_pub_cartesian_states_->unlockAndPublish();
+            }
+
+            if (biotac_sensors_exist_) 
+            {
+                if (realtime_pub_biotac_hand_->trylock())
                 {
-                    ros::Time duration((time - controller_start_time_).toSec());
-                    realtime_pub_tactile_->msg_.header.stamp = duration;
-                    tf::poseKDLToMsg(arm_cartesian_state_handles_[0].getPose(),  realtime_pub_tactile_->msg_.Pose);
-                    tf::twistKDLToMsg(arm_cartesian_state_handles_[0].getTwist(), realtime_pub_tactile_->msg_.Twist);
-                    for (int i = 0; i < num_joints_; i++)
-                    {
-                        realtime_pub_tactile_->msg_.joint_positions[i] = joint_state_handles_[i].getPosition();
-                        realtime_pub_tactile_->msg_.joint_velocities[i] = joint_state_handles_[i].getVelocity();
-                        realtime_pub_tactile_->msg_.joint_efforts[i] = joint_state_handles_[i].getEffort();
-                    }
-                    realtime_pub_tactile_->msg_.biotac_hand = biotac_hand_->collectBatch();
-                    realtime_pub_tactile_->msg_.biotac_hand.header.stamp = ros::Time((realtime_pub_tactile_->msg_.biotac_hand.header.stamp - controller_start_time_).toSec());
-                    realtime_pub_tactile_->msg_.biotac_hand.bt_time.frame_start_time = ros::Time((realtime_pub_tactile_->msg_.biotac_hand.bt_time.frame_start_time - controller_start_time_).toSec());
-                    realtime_pub_tactile_->msg_.biotac_hand.bt_time.frame_end_time = ros::Time((realtime_pub_tactile_->msg_.biotac_hand.bt_time.frame_end_time - controller_start_time_).toSec());                                   
-                    realtime_pub_tactile_->unlockAndPublish();
+                    realtime_pub_biotac_hand_->msg_ = biotac_hand_->collectBatch();
+                    realtime_pub_biotac_hand_->msg_.header.stamp = ros::Time((realtime_pub_biotac_hand_->msg_.header.stamp - controller_start_time_).toSec());
+                    realtime_pub_biotac_hand_->msg_.bt_time.frame_start_time = ros::Time((realtime_pub_biotac_hand_->msg_.bt_time.frame_start_time - controller_start_time_).toSec());
+                    realtime_pub_biotac_hand_->msg_.bt_time.frame_end_time = ros::Time((realtime_pub_biotac_hand_->msg_.bt_time.frame_end_time - controller_start_time_).toSec());                                   
+                    realtime_pub_biotac_hand_->unlockAndPublish();
                 }                 
             }
         }

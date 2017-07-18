@@ -15,9 +15,12 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <barrett_hw/robot_states_tactile.h>
-#include <barrett_hw/robot_states_no_tactile.h>
+#include <barrett_hw/arm_cartesian_state.h>
 #include <barrett_model/robot_state_interface.h>
+
+#include <sensor_msgs/JointState.h>
+#include <geometry_msgs/PoseStamped.h>
+
 #include <biotac_sensors/biotac_hand_class.h>
 #include <biotac_sensors/BioTacHand.h>
 #include <biotac_sensors/BioTacData.h>
@@ -38,9 +41,15 @@ namespace robot_states_publisher
             virtual void stopping(const ros::Time& /*time*/);
         private:
             boost::shared_ptr<barrett_model::RobotStateInterface> robot_state_;
-            boost::shared_ptr<realtime_tools::RealtimePublisher<barrett_hw::robot_states_tactile> > realtime_pub_tactile_;
-            boost::shared_ptr<realtime_tools::RealtimePublisher<barrett_hw::robot_states_no_tactile> > realtime_pub_no_tactile_;
+
+            boost::shared_ptr<realtime_tools::RealtimePublisher<sensor_msgs::JointState> > realtime_pub_joint_states_;
+            boost::shared_ptr<realtime_tools::RealtimePublisher<barrett_hw::arm_cartesian_state> > realtime_pub_cartesian_states_;
+            boost::shared_ptr<realtime_tools::RealtimePublisher<biotac_sensors::BioTacHand> > realtime_pub_biotac_hand_;
+
             boost::shared_ptr<biotac::BioTacHandClass> biotac_hand_;
+            boost::shared_ptr<sensor_msgs::JointState> joint_states_;
+            boost::shared_ptr<geometry_msgs::Pose> cartesian_states_;
+
             bool biotac_sensors_exist_;            
             int num_robots_;
             int num_joints_;

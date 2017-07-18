@@ -70,13 +70,13 @@
     robot_states_publisher:
       type: barrett_hw/RobotStatesPublisher
       publish_rate: 50
-      tactile: true
+      tactile: false
 
   </rosparam>
 
   <node name="default_controller_spawner"
     pkg="controller_manager" type="spawner" output="screen"
-    args="wam/joint_state_controller wam/robot_states_publisher"/>
+    args="wam/robot_states_publisher"/>
 
 
 </launch>
