@@ -45,7 +45,6 @@
   <!--   <remap from="robot_description" to="barrett/robot_description_yi" /> -->
   <!-- </node> --> 
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"> 
-     <!-- <remap from ="joint_states" to="JSP/joint_states" /> -->
      <remap from="robot_description" to="barrett/robot_description_yi" /> 
   </node> 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true"> 
@@ -70,13 +69,13 @@
     robot_states_publisher:
       type: barrett_hw/RobotStatesPublisher
       publish_rate: 50
-      tactile: false
+      tactile: true
 
   </rosparam>
 
   <node name="default_controller_spawner"
     pkg="controller_manager" type="spawner" output="screen"
-    args="wam/robot_states_publisher"/>
+    args="wam/joint_state_controller wam/robot_states_publisher"/>
 
 
 </launch>

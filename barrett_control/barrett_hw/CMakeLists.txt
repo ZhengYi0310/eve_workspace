@@ -19,6 +19,7 @@ if(Xenomai_FOUND)
         robot_cartesian_state.msg
 		robot_states_tactile.msg
   		robot_states_no_tactile.msg
+        joint_state.msg
   )
   generate_messages(DEPENDENCIES
   biotac_sensors

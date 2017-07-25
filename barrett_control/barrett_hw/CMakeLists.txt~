@@ -51,7 +51,7 @@ if(Xenomai_FOUND)
   target_link_libraries(arm_cartesian_state_controller xenomai native rtdm ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 
   add_library(robot_states_publisher src/robot_states_publisher.cpp )
-  target_link_libraries(arm_cartesian_state_controller xenomai native rtdm ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
+  target_link_libraries(robot_states_publisher xenomai native rtdm ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})
 
   add_library(wam_server_lib src/wam_server_copy.cpp)
   target_link_libraries(wam_server_lib xenomai native rtdm ${BARRETT_LIBRARIES} ${catkin_LIBRARIES} ${orocos_kdl_LIBRARIES})

@@ -45,7 +45,6 @@
   <!--   <remap from="robot_description" to="barrett/robot_description_yi" /> -->
   <!-- </node> --> 
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"> 
-     <!-- <remap from ="joint_states" to="JSP/joint_states" /> -->
      <remap from="robot_description" to="barrett/robot_description_yi" /> 
   </node> 
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true"> 
