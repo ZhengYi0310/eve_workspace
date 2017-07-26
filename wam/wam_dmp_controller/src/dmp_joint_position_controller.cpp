@@ -37,7 +37,7 @@ namespace wam_dmp_controller
         {
             controlled_joint_names.push_back(joint_names[i]);
             ros::NodeHandle joint_node_handle(node_handle, joint_names[i]);
-            boost::shared_ptr<JointPositionController> joint_position_controller;
+            boost::shared_ptr<JointPositionController> joint_position_controller(boost::make_shared<JointPositionController>());
             //JointPositionController joint_position_controller;
             if (!joint_position_controller->init(hw, joint_node_handle))
             {

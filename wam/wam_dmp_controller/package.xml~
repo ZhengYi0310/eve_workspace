@@ -23,11 +23,13 @@
   <build_depend>realtime_tools</build_depend>
   <build_depend>urdf</build_depend>
   <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
   <build_depend>usc_utilities</build_depend>
   <build_depend>dynamic_movement_primitive</build_depend>
   <build_depend>rosrt</build_depend>
   <build_depend>robot_info</build_depend>
   <build_depend>pluginlib</build_depend>
+  <build_depend>effort_controllers</build_depend>
 
   <run_depend>angles</run_depend>
   <run_depend>controller_interface</run_depend>
@@ -37,11 +39,13 @@
   <run_depend>realtime_tools</run_depend>
   <run_depend>urdf</run_depend>
   <run_depend>std_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
   <run_depend>usc_utilities</run_depend>
   <run_depend>dynamic_movement_primitive</run_depend>
   <run_depend>rosrt</run_depend>
   <run_depend>robot_info</run_depend>
   <run_depend>pluginlib</run_depend>
+  <run_depend>effort_controllers</run_depend>
 
   <export>
 	  <controller_interface plugin="${prefix}/controller_plugin.xml"/>

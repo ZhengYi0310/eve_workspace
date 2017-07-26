@@ -24,9 +24,11 @@
 
 #include <kdl/chain.hpp>
 #include <kdl/frames.hpp>
+#include <kdl/tree.hpp>
 #include <kdl/chainfksolver.hpp>
 #include <kdl/chainjnttojacsolver.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
+#include <kdl_parser/kdl_parser.hpp>
 
 #include <geometry_msgs/Twist.h>
 #include <tf/transform_datatypes.h>
@@ -42,7 +44,7 @@
 #include <wam_dmp_controller/joint_position_controller.h>
 #include <wam_dmp_controller/JointPositionVelocityStamped.h>
 #include <wam_dmp_controller/PoseTwistStamped.h>
-#include <wam_dmp_controller/NullSpaceTermStamped.h>
+#include <wam_dmp_controller/NullspaceTermStamped.h>
 
 namespace wam_dmp_controller
 {
@@ -89,7 +91,7 @@ namespace wam_dmp_controller
             /*!
              * @return 
              */
-            bool initMechanismChain()
+            bool initMechanismChain();
 
             /*!
              * @return 
@@ -109,7 +111,7 @@ namespace wam_dmp_controller
             /*!
              * @return 
              */
-            bool initRTPublisher()
+            bool initRTPublisher();
 
             /* ------------------------------
              * ! robot description 
@@ -149,15 +151,15 @@ namespace wam_dmp_controller
 
             /*! feedback pid controllers (translation and rotation)
              */
+            //std::vector<boost::shared_ptr<control_toolbox::Pid> > cartesian_fb_pid_controllers_;
             std::vector<control_toolbox::Pid> cartesian_fb_pid_controllers_;
-
             /*! feedback pid controllers (nullspace)
              */
-            std::vector<control_toolbox::Pid> nullspace_fb_pid_controllers_;
+            std::vector<boost::shared_ptr<control_toolbox::Pid> > nullspace_fb_pid_controllers_;
             
             /*!
              */
-            std::vector<JointPositionController> joint_position_controllers_;
+            std::vector<boost::shared_ptr<JointPositionController> >joint_position_controllers_;
 
             /*!
              */
@@ -198,15 +200,15 @@ namespace wam_dmp_controller
              * @param joint_position_controllers_
              * @return 
              */
-            static bool initJointPositionController(hardware_interface::EffortJointInterface *hw,
-                                                    ros::NodeHandle node_handle,
-                                                    std::vector<JointPositionController>& joint_position_controllers);
+            bool initJointPositionController(hardware_interface::EffortJointInterface *hw,
+                                             ros::NodeHandle node_handle,
+                                             std::vector<boost::shared_ptr<JointPositionController> >& joint_position_controllers);
 
             /*!
              */
-            boost::shared_ptr<realtime_tools::RealTimePublisher<wam_dmp_controller::PoseTwistStamped> > pose_twist_desired_publisher_;
-            boost::shared_ptr<realtime_tools::RealTimePublisher<wam_dmp_controller::PoseTwistStamped> > pose_twist_actual_publisher_;
-            boost::shared_ptr<wam_dmp_controller::NullSpaceTermStamped> > nullspace_term_publisher_;
+            boost::shared_ptr<realtime_tools::RealtimePublisher<wam_dmp_controller::PoseTwistStamped> > pose_twist_desired_publisher_;
+            boost::shared_ptr<realtime_tools::RealtimePublisher<wam_dmp_controller::PoseTwistStamped> > pose_twist_actual_publisher_;
+            boost::shared_ptr<realtime_tools::RealtimePublisher<wam_dmp_controller::NullspaceTermStamped> > nullspace_term_publisher_;
 
             /*!
              */

@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   realtime_tools
   urdf
   std_msgs
+  geometry_msgs
   usc_utilities
   dynamic_movement_primitive
   rosrt
@@ -23,6 +24,17 @@ find_package(Boost REQUIRED COMPONENTS thread signals system filesystem)
 add_definitions(${Boost_DEFINITIONS})
 include_directories(include ${Boost_INCLUDE_DIR} ${catkin_INCLUDE_DIRS})
 
+add_message_files(DIRECTORY msg FILES
+  JointPositionVelocityStamped.msg
+  NullspaceTermStamped.msg
+  PoseTwistStamped.msg
+  Waypoint.msg
+)
+generate_messages(DEPENDENCIES
+  geometry_msgs
+  std_msgs
+)
+
 # Declare catkin package
 catkin_package(
   CATKIN_DEPENDS
@@ -32,6 +44,8 @@ catkin_package(
     control_toolbox
     realtime_tools
     urdf
+    std_msgs
+    geometry_msgs
 	usc_utilities
 	dynamic_movement_primitive
 	rosrt
@@ -45,6 +59,8 @@ catkin_package(
 add_library(${PROJECT_NAME}
   src/joint_position_controller.cpp
   src/dmp_joint_position_controller.cpp
+  src/variable_name_map.cpp
+  src/cartesian_twist_controller_ik_with_nullspace_optimization.cpp 
 )
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
