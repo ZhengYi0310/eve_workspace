@@ -45,9 +45,12 @@
 #include <std_msgs/Float64.h>
 #include <control_msgs/JointControllerState.h>
 
+#include <usc_utilities/assert.h>
+#include <usc_utilities/param_server.h>
+
 namespace wam_dmp_controller
 {
-    class JointPositionController //: public controller_interface::Controller<hardware_interface::EffortJointInterface>
+    class JointPositionController : public controller_interface::Controller<hardware_interface::EffortJointInterface>
     {
         public:
             
@@ -59,7 +62,7 @@ namespace wam_dmp_controller
                 double position_; // Last commanded position 
                 double velocity_; // Last commanded velocity 
                 bool has_velocity_; // false if no velocity command has been specified 
-            }
+            };
 
             JointPositionController();
             ~JointPositionController();
@@ -161,22 +164,29 @@ namespace wam_dmp_controller
 
             double getCommandedEffort() const;
 
+            int getJointType() const;
+
             hardware_interface::JointHandle joint_;
-            urdf::JointConstSharedPtr joint_urdf_;
+            boost::shared_ptr<const urdf::Joint> joint_urdf_;
             realtime_tools::RealtimeBuffer<Commands> command_;
             Commands command_struct_; // pre-allocated member that is re-used to set the realtime buffer
 
         private:
             bool initialized_;
 
-            int loop_count_;
             control_toolbox::Pid pid_controller_; /**<Internal PID controller. */
 
             boost::scoped_ptr<realtime_tools::RealtimePublisher<control_msgs::JointControllerState> > controller_state_publisher_;
 
             ros::Subscriber sub_command_;
 
-            double error_, error_dot_, commanded_effort_;
+            double error_, error_dot_, last_error_, commanded_effort_;
+            int publisher_rate_, publisher_counter_, publisher_buffer_size_;
+
+            ros::NodeHandle node_handle_;
+            ros::Time last_time_;
+
+            void publish();
 
             /**
              * \brief Callback from /command subscriber for setpoint 
@@ -190,10 +200,13 @@ namespace wam_dmp_controller
              */
             void enforceJointLimits(double &command);
     };
-
-    inline double JointPositionController::getJointPosition() const 
+    
+    inline double JointPositionController::getJointPosition() const
     {
-        return joint_.getPosition();
+        if (joint_urdf_->type == urdf::Joint::CONTINUOUS)
+        {
+            return joint_.getPosition();
+        }
     }
 
     inline double JointPositionController::getJointVelocity() const 
@@ -214,6 +227,11 @@ namespace wam_dmp_controller
     inline double JointPositionController::getCommandedEffort() const 
     {
         return commanded_effort_;
+    }
+
+    inline int JointPositionController::getJointType() const 
+    {
+        return joint_urdf_->type;
     }
 }
 

@@ -20,9 +20,11 @@
 
 // local include 
 #include <wam_dmp_controller/joint_position_controller.h>
+#include <effort_controllers/joint_position_controller.h>
 #include <wam_dmp_controller/dmp_controller.h>
 
 #include <Eigen/Eigen>
+#include <vector>
 
 namespace wam_dmp_controller
 {
@@ -41,7 +43,7 @@ namespace wam_dmp_controller
             bool init(hardware_interface::EffortJointInterface *hw, ros::NodeHandle &node_handle);
 
             void starting(const ros::Time &time);
-            void update(const ros::Time &time, ros::Duration &period);
+            void update(const ros::Time &time, const ros::Duration &period);
 
             /*!
              * REAL-TIME REQUIREMENTS
@@ -53,7 +55,7 @@ namespace wam_dmp_controller
              */
             void holdPositions();
 
-            void getDesiredPositions();
+            void getDesiredPosition();
 
         private:
             
@@ -64,9 +66,10 @@ namespace wam_dmp_controller
             Eigen::VectorXd desired_velocities_;
             Eigen::VectorXd desired_accelerations_;
 
-            std::vector<JointPositionController> joint_position_controllers_;
+            std::vector<boost::shared_ptr<JointPositionController> > joint_position_controllers_; // use boost::shared_ptr to get around copy constructor weirdness
+            //std::vector<JointPositionController> joint_position_controllers_;
             
-            boost::shared_ptr<DMPControllerImplementation> dmp_controller_;
+            boost::shared_ptr<DMPController> dmp_controller_;
     };
 }
 #endif

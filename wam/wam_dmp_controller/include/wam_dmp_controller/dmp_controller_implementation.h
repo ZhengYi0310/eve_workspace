@@ -28,6 +28,7 @@
 // local includes 
 #include <wam_dmp_controller/dmp_controller.h>
 #include <wam_dmp_controller/variable_name_map.h>
+#include "wam_dmp_controller/filtered_subscriber.h"
 
 namespace wam_dmp_controller
 {
@@ -45,7 +46,7 @@ namespace wam_dmp_controller
              * return True on success, otherwise False 
              */
             bool initialize(const std::string& controller_name,
-                            const std::vector<std::string>& variable_names)
+                            const std::vector<std::string>& variable_names);
 
             /*!
              * @param new_start
@@ -72,7 +73,7 @@ namespace wam_dmp_controller
              * @return 
              * REAL-TIME REQUIREMENTS
              */
-            bool getDMP(dmp_lib::DMPPtr& dmp);
+            bool getDMP(dmp_lib::DMPBasePtr& dmp);
 
             /*!
              * @return 
@@ -129,7 +130,7 @@ namespace wam_dmp_controller
              */
             bool changeGoal();
 
-            rosrt::FilteredSubscriber<typename DMPType::DMPMsg, typename DMPType::DMPMsg> dmp_filtered_subscriber_;
+            rosrt::FilteredSubscriber<typename DMPType::DMPMsg, typename DMPType::DMP> dmp_filtered_subscriber_;
 
             /*!
              */
@@ -199,7 +200,7 @@ namespace wam_dmp_controller
             {
                 dmp_status_publisher_->msg_.end_time = end_time;
             }
-            dmp_status_publisher_->unlockandpublish();
+            dmp_status_publisher_->unlockAndPublish();
         }
     }
 
@@ -209,7 +210,7 @@ namespace wam_dmp_controller
                                                             Eigen::VectorXd& desired_velocities,
                                                             Eigen::VectorXd& desired_accelerations)
     {
-        for (int i = 0; i < num_variable_used_; i++)
+        for (int i = 0; i < num_variables_used_; i++)
         {
             int index = 0;
             if (!variable_name_map_.getSupportedVariableIndex(i, index))
@@ -224,39 +225,47 @@ namespace wam_dmp_controller
         }
         return true;
     }
-
-    //REAL-TIME REQUIREMENTS
+    
+    // REAL-TIME REQUIREMENTS
     template<class DMPType>
-    bool DMPControllerImplementation<DMPType>::getDMP(dmp_lib::DMPPtr& dmp)
+    typename DMPType::DMPPtr DMPControllerImplementation<DMPType>::getDMP()
     {
         ROS_ASSERT(initialized_);
-        dmp = static_cast<dmp_lib::DMPPtr>(dmp_);
+        return dmp_;
+    }
+    
+    //REAL-TIME REQUIREMENTS
+    template<class DMPType>
+    bool DMPControllerImplementation<DMPType>::getDMP(dmp_lib::DMPBasePtr& dmp)
+    {
+        ROS_ASSERT(initialized_);
+        dmp = static_cast<dmp_lib::DMPBasePtr>(dmp_);
         return true;
     }
 
     //REAL-TIME REQUIREMENTS
     template<class DMPType>
-    bool DMPControllerImplementation<DMPType>::setDMP(DMPType::DMPPtr dmp, bool strict)
+    bool DMPControllerImplementation<DMPType>::setDMP(typename DMPType::DMPPtr dmp, bool strict)
     {
         if (dmp->isSetup())
         {
             variable_name_map_.reset();
-            num_variable_used_ = 0;
+            num_variables_used_ = 0;
             for (int i = 0; i < dmp->getNumTransformationSystems(); ++i)
             {
                 for (int j = 0 ; j < dmp->getTransformationSystem(i)->getNumDimensions(); j++)
                 {
-                    if (!variable_name_map_.set(dmp->getTransformationSystem(i)->getName(j), num_variable_used_))
+                    if (!variable_name_map_.set(dmp->getTransformationSystem(i)->getName(j), num_variables_used_))
                     {
                         if (strict)
                         {
-                            ROS_ERROR("Received DMP variable name >%s< is not handled by this DMP controller (real-time violation).", dmp->getNumTransformationSystems(i)->getName(j).c_str());
+                            ROS_ERROR("Received DMP variable name >%s< is not handled by this DMP controller (real-time violation).", dmp->getTransformationSystem(i)->getName(j).c_str());
                             return false;
                         }
                     }
                     else
                     {
-                        num_variable_used_++;
+                        num_variables_used_++;
                     }
                 }
             }
@@ -285,14 +294,15 @@ namespace wam_dmp_controller
             dmp = dmp_filtered_subscriber_.poll();
             if (dmp)
             {
-                return setDMP(dmp)
+                return setDMP(dmp);
             }
         }
         return false;
     }
 
     // REAL-TIME REQUIREMENTS
-    bool DMPControllerImplementation::isRunning(Eigen::VectorXd& desired_positions,
+    template<class DMPType>
+    bool DMPControllerImplementation<DMPType>::isRunning(Eigen::VectorXd& desired_positions,
                                                 Eigen::VectorXd& desired_velocities,
                                                 Eigen::VectorXd& desired_accelerations)
     {
@@ -300,7 +310,7 @@ namespace wam_dmp_controller
         {
             ROS_VERIFY(changeGoal());
             bool movement_finished = false;
-            if (!dmp_->propogateStep(entire_desired_positions_, entire_desired_velocities_, entire_desired_accelerations_, movement_finished))
+            if (!dmp_->propagateStep(entire_desired_positions_, entire_desired_velocities_, entire_desired_accelerations_, movement_finished))
             {
                 // something went wrong 
                 publishStatus(dynamic_movement_primitive::ControllerStatusMsg::FAILED, false, ros::Time::now());
@@ -336,7 +346,7 @@ namespace wam_dmp_controller
         geometry_msgs::PoseStamped::ConstPtr goal_pose = dmp_goal_subscriber_.poll();
         if (goal_pose)
         {
-            for (int i = 0; i < num_variable_used_; i++)
+            for (int i = 0; i < num_variables_used_; i++)
             {
                 int index = 0;
                 if (!variable_name_map_.getSupportedVariableIndex(i, index))
@@ -391,7 +401,7 @@ namespace wam_dmp_controller
     template<class DMPType>
     bool DMPControllerImplementation<DMPType>::changeDMPStart(const Eigen::VectorXd& new_start)
     {
-        return getDMP()->changestart(new_start);
+        return getDMP()->changeStart(new_start);
     }
 
     template<class DMPType>

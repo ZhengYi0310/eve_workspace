@@ -12,6 +12,7 @@
 #include <dynamic_movement_primitive/nc2010_dynamic_movement_primitive.h>
 #include <dynamic_movement_primitive/dynamic_movement_primitive.h>
 #include <dynamic_movement_primitive/ControllerStatusMsg.h>
+#include <wam_dmp_controller/variable_name_map.h>
 
 namespace wam_dmp_controller
 {
@@ -54,7 +55,7 @@ namespace wam_dmp_controller
              * @return 
              * REAL-TIME REQUIREMENTS
              */
-            virtual bool getDMP(dmp_lib::DMPPtr& dmp) = 0;
+            virtual bool getDMP(dmp_lib::DMPBasePtr& dmp) = 0;
             
             /*!
              * @return 

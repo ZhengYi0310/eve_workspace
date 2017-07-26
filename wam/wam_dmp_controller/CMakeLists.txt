@@ -12,6 +12,11 @@ find_package(catkin REQUIRED COMPONENTS
   urdf
   std_msgs
   usc_utilities
+  dynamic_movement_primitive
+  rosrt
+  robot_info
+  pluginlib
+  effort_controllers
 )
 
 find_package(Boost REQUIRED COMPONENTS thread signals system filesystem)
@@ -28,12 +33,18 @@ catkin_package(
     realtime_tools
     urdf
 	usc_utilities
+	dynamic_movement_primitive
+	rosrt
+    robot_info
+    pluginlib
+    effort_controllers
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
   )
 
 add_library(${PROJECT_NAME}
   src/joint_position_controller.cpp
+  src/dmp_joint_position_controller.cpp
 )
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 

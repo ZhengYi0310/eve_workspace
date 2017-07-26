@@ -79,7 +79,7 @@ namespace wam_dmp_controller
                                       const double &i_min,
                                       const bool &antiwindup)
     {
-        pid_controller_.setGains(p, i, d, i_max, i_min); //antiwindup);
+        pid_controller_.setGains(p, i, d, i_max, i_min, antiwindup);
     }
 
     void JointPositionController::getGains(double &p,
@@ -89,7 +89,7 @@ namespace wam_dmp_controller
                                            double &i_min,
                                            bool &antiwindup)
     {
-        pid_controller_.getGains(p, i, d, i_max, i_min); //antiwindup);
+        pid_controller_.getGains(p, i, d, i_max, i_min, antiwindup);
     }
 
     void JointPositionController::getGains(double &p,
@@ -99,7 +99,7 @@ namespace wam_dmp_controller
                                            double &i_min)
     {
         bool dummy;
-        pid_controller_.getGains(p, i, d, i_max, i_min); //dummy);
+        pid_controller_.getGains(p, i, d, i_max, i_min, dummy);
     }
 
     void JointPositionController::printDebug()
@@ -212,7 +212,7 @@ namespace wam_dmp_controller
                          controller_state_publisher_->msg_.i_clamp,
                          dummy,
                          antiwindup);
-                //controller_state_publisher_->msg_.antiwindup = static_cast<char>(antiwindup);
+                controller_state_publisher_->msg_.antiwindup = static_cast<char>(antiwindup);
                 controller_state_publisher_->unlockAndPublish();
             }
         }
