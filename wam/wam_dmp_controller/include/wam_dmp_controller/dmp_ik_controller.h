@@ -55,15 +55,15 @@ namespace wam_dmp_controller
 
             /*!
              */
-            void starting();
+            void starting(const ros::Time& time);
 
             /*!
              */
-            void update();
+            void update(const ros::Time& time, const ros::Duration& period);
 
             /*!
              */
-            void stopping();
+        void stopping(const ros::Time& time);
 
             /*!
              * @return 

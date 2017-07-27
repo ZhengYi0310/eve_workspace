@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
   robot_info
   pluginlib
   effort_controllers
+  message_generation
 )
 
 find_package(Boost REQUIRED COMPONENTS thread signals system filesystem)
@@ -52,6 +53,7 @@ catkin_package(
     robot_info
     pluginlib
     effort_controllers
+    message_runtime
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
   )
@@ -61,8 +63,15 @@ add_library(${PROJECT_NAME}
   src/dmp_joint_position_controller.cpp
   src/variable_name_map.cpp
   src/cartesian_twist_controller_ik_with_nullspace_optimization.cpp 
+  src/dmp_ik_controller.cpp
 )
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBARIES})
+
+add_executable(test_wam_dmp_controller
+  test/test_dmp_controller.cpp
+)
+target_link_libraries(test_wam_dmp_controller ${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBARIES})
+add_dependencies(test_wam_dmp_controller ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS} wam_dmp_controller_gencpp)
 
 # Install
 install(DIRECTORY include/${PROJECT_NAME}/

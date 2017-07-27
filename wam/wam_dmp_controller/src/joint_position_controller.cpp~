@@ -11,7 +11,7 @@
 
 namespace wam_dmp_controller
 {
-    JointPositionController::JointPositionController() : initialized_(false), loop_count_(0), error_(0.0), error_dot_(0.0), commanded_effort_(0.0)
+    JointPositionController::JointPositionController() : initialized_(false), error_(0.0), error_dot_(0.0), last_error_(0), commanded_effort_(0.0), publisher_rate_(10), publisher_counter_(0), publisher_buffer_size_(1000), last_time_(0)
     {
     }
 
@@ -20,7 +20,7 @@ namespace wam_dmp_controller
         sub_command_.shutdown();
     }
 
-    bool init(hardware_interface::EffortJointInterface *hw, ros::NodeHandle &n)
+    bool JointPositionController::init(hardware_interface::EffortJointInterface *hw, ros::NodeHandle &n)
     {
         assert(hw);
         // Get joint name from a prameter server 
@@ -37,7 +37,7 @@ namespace wam_dmp_controller
         {
             ROS_ERROR("Could not initialize a pid controller.");
             initialized_ = false;
-            return initialized_
+            return initialized_;
         }
 
         // Start the realtime publisher 
@@ -50,8 +50,11 @@ namespace wam_dmp_controller
         joint_ = hw->getHandle(joint_name);
 
         // Get URDF info about the joint 
+        std::string urdf_str;
+        ROS_VERIFY(usc_utilities::read(n, "robot_description", urdf_str));
         urdf::Model urdf;
-        if (!urdf.initParamWithinNodeHandle("robot_description", n))
+        //if (!urdf.initParamWithinNodeHandle("robot_description", n))
+        if (!urdf.initString(urdf_str))
         {
             ROS_ERROR("Failed to parse the urdf file");
             initialized_ = false;
@@ -60,7 +63,7 @@ namespace wam_dmp_controller
         joint_urdf_ = urdf.getJoint(joint_name);
         if (!joint_urdf_)
         {
-            ROS_ERROR("Could not find joint '%s' in urdf", joint_name.c_str())
+            ROS_ERROR("Could not find joint '%s' in urdf", joint_name.c_str());
             initialized_ = false;
             return initialized_;
         }
@@ -86,7 +89,7 @@ namespace wam_dmp_controller
                                            double &i_min,
                                            bool &antiwindup)
     {
-        pid_controller_.getGains(p, i, d, i_max, i_min, antiwindup);
+        pid_controller_.getGains(p, i, d, i_max, i_min);
     }
 
     void JointPositionController::getGains(double &p,
@@ -96,7 +99,7 @@ namespace wam_dmp_controller
                                            double &i_min)
     {
         bool dummy;
-        pid_controller_.getGains(p, i, d, i_max, i_min, dummy);
+        pid_controller_.getGains(p, i, d, i_max, i_min);
     }
 
     void JointPositionController::printDebug()
@@ -112,7 +115,7 @@ namespace wam_dmp_controller
     void JointPositionController::setCommand(double pos_target)
     {
         command_struct_.position_ = pos_target;
-        command_struct_.has_velocity_ = false; // Falg to ignore the velocity command since out setCommand method did not include it 
+        command_struct_.has_velocity_ = false; // Flag to ignore the velocity command since out setCommand method did not include it 
 
         // the writeFromNonRT can be used in RT, if you have the gurantee that
         // no non-rt thread is calling the same function (we're not subscribing to ros callbacks)
@@ -145,7 +148,7 @@ namespace wam_dmp_controller
 
     void JointPositionController::update(const ros::Time& time, const ros::Duration& period)
     {
-        command_struct_ = *(command_.readfromRT());
+        command_struct_ = *(command_.readFromRT());
         double command_position = command_struct_.position_;
         double command_velocity = command_struct_.velocity_;
         bool has_velocity_ = command_struct_.has_velocity_;
@@ -186,9 +189,10 @@ namespace wam_dmp_controller
         }
 
         joint_.setCommand(commanded_effort_);
+        last_time_ = time;
 
         // publish rate 
-        if (loop_count_ % 10 == 0)
+        if (publisher_counter_ % publisher_rate_ == 0)
         {
             if (controller_state_publisher_ && controller_state_publisher_->trylock())
             {
@@ -209,10 +213,10 @@ namespace wam_dmp_controller
                          dummy,
                          antiwindup);
                 controller_state_publisher_->msg_.antiwindup = static_cast<char>(antiwindup);
-                controller_state_publisher_->unlockandpublish();
+                controller_state_publisher_->unlockAndPublish();
             }
         }
-        loop_count_++;
+        publisher_counter_++;
     }
 
 	void JointPositionController::setCommandCB(const std_msgs::Float64ConstPtr& msg)

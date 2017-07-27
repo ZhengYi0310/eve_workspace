@@ -141,5 +141,4 @@ namespace wam_dmp_controller
         setDesiredState();
     }
 }
-PLUGINLIB_DECLARE_CLASS(wam_dmp_controller, DMPJointPositionController,
-    wam_dmp_controller::DMPJointPositionController, controller_interface::ControllerBase)
+PLUGINLIB_EXPORT_CLASS(wam_dmp_controller::DMPJointPositionController, controller_interface::ControllerBase)

@@ -67,7 +67,7 @@ namespace wam_dmp_controller
              * @return 
              * REAL-TIME REQUIREMENTS
              */
-            const VariableNameMap& getVariableNameMap() const 
+            const VariableNameMap& getVatiableNameMap() const 
             {
                 return variable_name_map_;
             }

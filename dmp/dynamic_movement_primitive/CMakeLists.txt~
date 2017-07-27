@@ -40,9 +40,9 @@ include_directories(${EIGEN_INCLUDE_DIRS})
 add_definitions(${EIGEN_DEFINITIONS})
 include_directories(${catkin_INCLUDE_DIRS})
 
-find_package(Eigen3 REQUIRED)
-include_directories(${EIGEN3_INCLUDE_DIRS})
-add_definitions(${EIGEN3_DEFINITIONS})
+#find_package(Eigen3 REQUIRED)
+#include_directories(${EIGEN3_INCLUDE_DIRS})
+#add_definitions(${EIGEN3_DEFINITIONS})
 
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
