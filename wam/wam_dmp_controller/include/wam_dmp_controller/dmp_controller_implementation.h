@@ -174,8 +174,11 @@ namespace wam_dmp_controller
         entire_desired_accelerations_ = Eigen::VectorXd::Zero(variable_names.size());
 
         ros::NodeHandle node_handle;
-        ROS_VERIFY(dmp_filtered_subscriber_.initialize(100, node_handle, controller_name + "/command", boost::bind(&DMPControllerImplementation<DMPType>::filter, this, _1, _2)));
-        ROS_VERIFY(dmp_goal_subscriber_.initialize(100, node_handle, controller_name + "/goal"));
+        //rosrt::init(); // before using any part of rosrt, this one must be called!!!!!
+        //ROS_INFO("Initialize the realtime subscriber...");
+        //ROS_VERIFY(dmp_filtered_subscriber_.initialize(100, node_handle, controller_name + "/command", boost::bind(&DMPControllerImplementation<DMPType>::filter, this, _1, _2)));
+        //ROS_VERIFY(dmp_goal_subscriber_.initialize(100, node_handle, controller_name + "/goal"));
+        //ROS_INFO("realtime subscriber initialization done!");
 
         // Start the real time publisher 
         dmp_status_publisher_.reset(new realtime_tools::RealtimePublisher<dynamic_movement_primitive::ControllerStatusMsg>(node_handle, controller_name + "/status", 10));
@@ -219,7 +222,7 @@ namespace wam_dmp_controller
                 return false;
             }
 
-            desired_positions(index) = entire_desired_positions_(i);
+            desired_positions(index) = entire_desired_positions_(i); //desired_positions(i) = entire_desired_positions_(index)
             desired_velocities(index) = entire_desired_velocities_(i);
             desired_accelerations(index) = entire_desired_accelerations_(i);
         }

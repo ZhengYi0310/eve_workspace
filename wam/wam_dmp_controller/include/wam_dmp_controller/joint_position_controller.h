@@ -205,8 +205,9 @@ namespace wam_dmp_controller
     {
         if (joint_urdf_->type == urdf::Joint::CONTINUOUS)
         {
-            return joint_.getPosition();
+            return angles::normalize_angle(joint_.getPosition());
         }
+        return joint_.getPosition();
     }
 
     inline double JointPositionController::getJointVelocity() const 
