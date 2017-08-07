@@ -134,9 +134,9 @@ namespace wam_dmp_controller
              */
             typename DMPType::DMPPtr dmp_;
 
-			/*!
-			 */
-			std::string abs_bag_file_name_;
+            /*!
+             */
+            std::string abs_bag_file_name_;
 
             /*!
              */
@@ -170,7 +170,7 @@ namespace wam_dmp_controller
         ros::NodeHandle controller_node_handle(controller_name);
         std::vector<std::string> controller_variable_names;
         ROS_VERIFY(usc_utilities::read(controller_node_handle, "trajectory/variable_names", controller_variable_names));
-		ROS_VERIFY(usc_utilities::read(controller_node_handle, "abs_dmp_bagfile_location", abs_bag_file_name_));
+        ROS_VERIFY(usc_utilities::read(controller_node_handle, "abs_dmp_bagfile_location", abs_bag_file_name_));
         ROS_VERIFY(variable_name_map_.initialize(variable_names, controller_variable_names));
 
         entire_desired_positions_ = Eigen::VectorXd::Zero(variable_names.size());
@@ -300,7 +300,7 @@ namespace wam_dmp_controller
         {
             typename DMPType::DMPPtr dmp;
             //dmp = dmp_filtered_subscriber_.poll();  Can't use the poll based subscriber from rosrt because it messes up with the threading 
-			DMPType::readFromDisc(dmp, abs_bag_file_name_);
+            DMPType::readFromDisc(dmp, abs_bag_file_name_);
             if (dmp)
             {
                 return setDMP(dmp);
