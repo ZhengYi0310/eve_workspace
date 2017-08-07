@@ -1,5 +1,3 @@
-abs_dmp_bagfile_location: default_location
-
 trajectory:
 
   variable_names: [left_wam/base_yaw_joint, left_wam/shoulder_pitch_joint, left_wam/shoulder_yaw_joint, left_wam/elbow_pitch_joint, left_wam/wrist_yaw_joint, left_wam/wrist_pitch_joint, left_wam/palm_yaw_joint]

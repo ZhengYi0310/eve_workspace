@@ -130,15 +130,18 @@ namespace wam_dmp_controller
              */
             bool changeGoal();
 
-            rosrt::FilteredSubscriber<typename DMPType::DMPMsg, typename DMPType::DMP> dmp_filtered_subscriber_;
-
             /*!
              */
             typename DMPType::DMPPtr dmp_;
 
+			/*!
+			 */
+			std::string abs_bag_file_name_;
+
             /*!
              */
-            rosrt::Subscriber<geometry_msgs::PoseStamped> dmp_goal_subscriber_; 
+            //rosrt::Subscriber<geometry_msgs::PoseStamped> dmp_goal_subscriber_; 
+            //rosrt::FilteredSubscriber<typename DMPType::DMPMsg, typename DMPType::DMP> dmp_filtered_subscriber_;
     };
 
     template<class DMPType>
@@ -167,6 +170,7 @@ namespace wam_dmp_controller
         ros::NodeHandle controller_node_handle(controller_name);
         std::vector<std::string> controller_variable_names;
         ROS_VERIFY(usc_utilities::read(controller_node_handle, "trajectory/variable_names", controller_variable_names));
+		ROS_VERIFY(usc_utilities::read(controller_node_handle, "abs_dmp_bagfile_location", abs_bag_file_name_));
         ROS_VERIFY(variable_name_map_.initialize(variable_names, controller_variable_names));
 
         entire_desired_positions_ = Eigen::VectorXd::Zero(variable_names.size());
@@ -196,8 +200,8 @@ namespace wam_dmp_controller
         if(dmp_status_publisher_ && dmp_status_publisher_->trylock())
         {
             dmp_status_publisher_->msg_.status = status;
-            dmp_status_publisher_->msg_.id = dmp_->getId();
-            dmp_status_publisher_->msg_.percent_complete = dmp_->getProgress();
+            dmp_status_publisher_->msg_.id = dmp_->getId(); 
+            dmp_status_publisher_->msg_.percent_complete = dmp_->getProgress(); 
             dmp_status_publisher_->msg_.start_time = start_time_;
             if (movement_finished)
             {
@@ -230,6 +234,7 @@ namespace wam_dmp_controller
     }
     
     // REAL-TIME REQUIREMENTS
+	
     template<class DMPType>
     typename DMPType::DMPPtr DMPControllerImplementation<DMPType>::getDMP()
     {
@@ -242,7 +247,7 @@ namespace wam_dmp_controller
     bool DMPControllerImplementation<DMPType>::getDMP(dmp_lib::DMPBasePtr& dmp)
     {
         ROS_ASSERT(initialized_);
-        dmp = static_cast<dmp_lib::DMPBasePtr>(dmp_);
+        dmp = static_cast<dmp_lib::DMPBasePtr>(dmp_); 
         return true;
     }
 
@@ -273,8 +278,8 @@ namespace wam_dmp_controller
                 }
             }
             start_time_ = ros::Time::now();
-            dmp_.reset();
-            dmp_ = dmp;
+            dmp_.reset(); 
+            dmp_ = dmp; 
             dmp_is_set_ = true;
             return (dmp_is_being_executed_ = true);
         }
@@ -294,7 +299,8 @@ namespace wam_dmp_controller
         if (!dmp_is_being_executed_)
         {
             typename DMPType::DMPPtr dmp;
-            dmp = dmp_filtered_subscriber_.poll();
+            //dmp = dmp_filtered_subscriber_.poll();  Can't use the poll based subscriber from rosrt because it messes up with the threading 
+			DMPType::readFromDisc(dmp, abs_bag_file_name_);
             if (dmp)
             {
                 return setDMP(dmp);
@@ -313,12 +319,13 @@ namespace wam_dmp_controller
         {
             ROS_VERIFY(changeGoal());
             bool movement_finished = false;
+			
             if (!dmp_->propagateStep(entire_desired_positions_, entire_desired_velocities_, entire_desired_accelerations_, movement_finished))
             {
                 // something went wrong 
                 publishStatus(dynamic_movement_primitive::ControllerStatusMsg::FAILED, false, ros::Time::now());
                 dmp_is_being_executed_ = false;
-            }
+            } 
 
             if (!setVariables(desired_positions, desired_velocities, desired_accelerations))
             {
@@ -346,7 +353,7 @@ namespace wam_dmp_controller
     template<class DMPType>
     bool DMPControllerImplementation<DMPType>::changeGoal()
     {
-        geometry_msgs::PoseStamped::ConstPtr goal_pose = dmp_goal_subscriber_.poll();
+        geometry_msgs::PoseStamped::ConstPtr goal_pose; //= dmp_goal_subscriber_.poll();
         if (goal_pose)
         {
             for (int i = 0; i < num_variables_used_; i++)
@@ -395,6 +402,7 @@ namespace wam_dmp_controller
                         ROS_VERIFY(dmp_->changeGoal(goal_pose->pose.orientation.z, local_index));
                     }
                 }
+				
             }
         }
 

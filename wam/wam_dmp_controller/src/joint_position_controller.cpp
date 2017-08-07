@@ -51,7 +51,7 @@ namespace wam_dmp_controller
 
         // Get URDF info about the joint 
         std::string urdf_str;
-		ros::NodeHandle temp_nh("barrett"); //TODO becareful of the namespace here
+		ros::NodeHandle temp_nh("barrett"); //TODO be careful of the namespace here
         ROS_VERIFY(usc_utilities::read(temp_nh, "robot_description_yi", urdf_str));
         urdf::Model urdf;
         //if (!urdf.initParamWithinNodeHandle("robot_description", n))
@@ -241,4 +241,6 @@ namespace wam_dmp_controller
         }
     }
 }
+
+PLUGINLIB_EXPORT_CLASS(wam_dmp_controller::JointPositionController, controller_interface::ControllerBase)
 

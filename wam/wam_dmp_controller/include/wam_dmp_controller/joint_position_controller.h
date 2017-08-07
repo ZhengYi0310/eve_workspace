@@ -50,7 +50,7 @@
 
 namespace wam_dmp_controller
 {
-    class JointPositionController //: public controller_interface::Controller<hardware_interface::EffortJointInterface>
+    class JointPositionController : public controller_interface::Controller<hardware_interface::EffortJointInterface>
     {
         public:
             
