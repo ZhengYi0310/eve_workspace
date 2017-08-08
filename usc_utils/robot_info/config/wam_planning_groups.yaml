@@ -1,9 +1,9 @@
-## This file should be loaded under <robot description>_planning
+## This file should be loaded under /robot_info
 
 ## the definition of each group
 groups:
 
-  - name: RIGHT_ARM
+  - name: right_arm
     joints:
       right_wam/base_yaw_joint
       right_wam/shoulder_pitch_joint
@@ -21,7 +21,7 @@ groups:
       right_wam/wrist_pitch_link
       right_wam/wrist_palm_link
 
- - name: LEFT_ARM
+  - name: left_arm
     joints:
       left_wam/base_yaw_joint
       left_wam/shoulder_pitch_joint

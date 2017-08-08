@@ -136,15 +136,13 @@ namespace wam_dmp_controller
 
         // initiaze the cartesian controller 
         cart_controller_.reset(new CartController());
-        
         if (!cart_controller_->init(hw, node_handle_))
         {
             ROS_ERROR("Could not initialize Cartesian Controller.");
             return (initialized_ = false);
         }
-        
-        
-        ROS_INFO("Done initializing DMP IK controller.");
+
+        ROS_DEBUG("Done initializing DMP IK controller.");
         return (initialized_ = true);
     }
 

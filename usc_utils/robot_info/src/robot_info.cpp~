@@ -700,7 +700,7 @@ bool RobotInfo::initialize()
   joint_info_.resize(N_DOFS);
 
   // load urdf:
-  ROS_VERIFY(urdf_.initParam("barrett/robot_description_yi"));
+  ROS_VERIFY(urdf_.initParam("/robot_description"));
 
   // create kdl tree:
   ROS_VERIFY(kdl_parser::treeFromUrdfModel(urdf_, kdl_tree_));
