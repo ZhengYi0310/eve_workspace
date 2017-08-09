@@ -110,7 +110,7 @@ namespace dmp_behaviors
         }
 
         dmp_utilities_msg.dmp_version = dynamic_movement_primitive::DMPUtilitiesMsg::NC2010;
-		
+
         skill_library::Affordance affordance;
         affordance.dmp = dmp_utilities_msg;
         affordance.object = goal->object;
@@ -124,12 +124,11 @@ namespace dmp_behaviors
             BehaviorUtilities<LearningFromDemonstration, ActionServer>::failed("Could not add affordance to skill library.", action_server_);
             return;
         }
-		*/
+
         LearningFromDemonstrationResult result;
-        skill_library::Affordance affordance;
         result.affordance = affordance;
         result.result = LearningFromDemonstrationResult::SUCCEEDED;
-	
+		*/
         action_server_.setSucceeded(result);
     }
 

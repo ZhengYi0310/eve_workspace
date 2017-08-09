@@ -26,6 +26,7 @@
 
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/WrenchStamped.h>
+#include <task_recorder/DataSample.h>
 
 #include <dynamic_movement_primitive/dynamic_movement_primitive.h>
 #include <dynamic_movement_primitive/TypeMsg.h>
@@ -45,6 +46,7 @@ typedef sensor_msgs::JointState JointStateMsg;
 typedef geometry_msgs::WrenchStamped WrenchStampedMsg;
 typedef geometry_msgs::Point PointMsg;
 typedef geometry_msgs::Quaternion QuaternionMsg;
+typedef task_recorder::DataSample DataSampleMsg;
 
 bool TrajectoryUtilities::createTrajectory(const dmp_lib::DMPBasePtr dmp,
                                            const std::string& base_frame_id,
@@ -170,6 +172,71 @@ bool TrajectoryUtilities::createWrenchTrajectory(dmp_lib::Trajectory& trajectory
   ROS_VERIFY(TrajectoryUtilities::filter(trajectory, "WrenchLowPass"));
   ROS_VERIFY(TrajectoryUtilities::resample(trajectory, time_stamps, sampling_frequency, compute_derivatives));
   return true;
+}
+
+bool TrajectoryUtilities::createJointStateTrajectoryFromDataSamples(dmp_lib::Trajectory& trajectory,
+                                                                    const std::vector<std::string>& variable_names,
+                                                                    const std::string& abs_bag_file_name,
+                                                                    const double sampling_frequency,
+                                                                    const std::string& topic_name,
+                                                                    const bool compute_derivatives)
+{
+    if (variable_names.empty())
+    {
+        ROS_ERROR("No joint variable names provided, cannot create joint trajectory from bag file >%s<.", abs_bag_file_name.c_str());
+        return false;
+    }
+
+    // read all DataSample messages from the bag file 
+    vector<DataSampleMsg> data_sample_msgs;
+    ROS_VERIFY(usc_utilities::FileIO<DataSampleMsg>::readFromBagFile(data_sample_msgs, topic_name, abs_bag_file_name));
+    ROS_INFO("Read >%i< data sample messages from bag file >%s<.", (int)data_sample_msgs.size(), abs_bag_file_name.c_str());
+    
+    const int num_joints = static_cast<int> (variable_names.size());
+    const int num_data_points = static_cast<int> (data_sample_msgs.size());
+    VectorXd joint_positions = VectorXd::Zero(num_joints);
+
+    // initialie trajectory 
+    // TODO: using sampling_frequency, which actually is not required.
+    ROS_VERIFY(trajectory.initialize(variable_names, sampling_frequency, true, num_data_points));
+    vector<ros::Time> time_stamps;
+
+    // iterate through all messages
+    for (vector<DataSampleMsg>::const_iterator ci = data_sample_msgs.begin(); ci != data_sample_msgs.end(); ++ci)
+    {
+        int index = 0;
+        int num_joints_found = 0;
+        // for each message, iterate through the list of names
+        for (vector<string>::const_iterator vsi = ci->names.begin(); vsi != ci->names.end(); vsi++)
+        {
+            // iterate through all variable names
+            for (int i = 0; i < num_joints; ++i)
+            {
+                // find match
+                // ROS_DEBUG("Comparing: >%s< and >%s<", vsi->c_str(), joint_variable_names[i].c_str());
+                if(vsi->compare(variable_names[i] + "_pos") == 0)
+                {
+                    joint_positions(i) = ci->data[index];
+                    //ROS_INFO("joint: >%s<",variable_names[i].c_str());
+                    num_joints_found++;
+                }
+            }
+            index = index + 3;
+        }
+
+        // check whether all variable names were found
+        if (num_joints_found != num_joints)
+        {
+            ROS_ERROR("Number of joints is >%i<, but there have been only >%i< matches.", num_joints, num_joints_found);
+            return false;
+        }
+        // add data
+        ROS_VERIFY(trajectory.add(joint_positions));
+        ros::Time stamp(ci->data[(ci->data).size() - 1]);
+        time_stamps.push_back(stamp);
+    }
+    ROS_VERIFY(TrajectoryUtilities::resample(trajectory, time_stamps, sampling_frequency, compute_derivatives));
+    return true;
 }
 
 bool TrajectoryUtilities::createJointStateTrajectory(dmp_lib::Trajectory& trajectory,

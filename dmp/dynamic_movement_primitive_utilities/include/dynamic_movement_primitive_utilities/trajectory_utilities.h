@@ -76,6 +76,13 @@ public:
                                          const std::string& topic_name = "/joint_states",
                                          const bool compute_derivatives = true);
 
+    static bool createJointStateTrajectoryFromDataSamples(dmp_lib::Trajectory& trajectory,
+                                                          const std::vector<std::string>& variable_names,
+                                                          const std::string& abs_bag_file_name,
+                                                          const double sampling_frequency,
+                                                          const std::string& topic_name = "/joint_states_rt",
+                                                          const bool compute_derivatives = true);
+
   /*!
    * @param trajectory
    * @param wrench_variable_names

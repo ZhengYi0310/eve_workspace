@@ -85,7 +85,7 @@ namespace dmp_behaviors
         LearningFromDemonstrationGoal goal;
         
         goal.joint_states_bag_file_name = joint_states_bag_file_name_;
-        goal.robot_part_names_from_trajectory.push_back("RIGHT_ARM");
+        goal.robot_part_names_from_trajectory.push_back("left_arm");
         goal.type.type = 1;
 
         action_client_.sendGoal(goal, boost::bind(&LearningFromDemonstrationClient::GoalCallback, this, _1, _2), ActionClient::SimpleActiveCallback(), ActionClient::SimpleFeedbackCallback());
@@ -93,6 +93,7 @@ namespace dmp_behaviors
 
     void LearningFromDemonstrationClient::GoalCallback(const actionlib::SimpleClientGoalState& state, const LearningFromDemonstrationResultConstPtr& result)
     {
+        
         ROS_INFO("Finished in state [%s]", state.toString().c_str());
         ROS_INFO("Result status: %i", result->result);
 
@@ -104,7 +105,7 @@ namespace dmp_behaviors
         std::vector<std::string> robot_part_names;
         ros::NodeHandle node_handle_tmp("/LearningFromDemonstration");
         //usc_utilities::read(node_handle_tmp, "robot_part_names", robot_part_names);
-        robot_part_names.push_back("RIGHT_ARM");
+        robot_part_names.push_back("left_arm");
 
         robot_info::init();
         std::vector<std::string> joint_variable_names;
@@ -112,8 +113,9 @@ namespace dmp_behaviors
 
         // read the bag file and recreate the trajectory.
         dmp_lib::Trajectory trajectory;
-        dmp_utilities::TrajectoryUtilities::createJointStateTrajectory(trajectory, joint_variable_names, abs_bag_file_name, robot_info::RobotInfo::DEFAULT_SAMPLING_FREQUENCY);
-
+        dmp_utilities::TrajectoryUtilities::createJointStateTrajectoryFromDataSamples(trajectory, joint_variable_names, abs_bag_file_name, robot_info::RobotInfo::DEFAULT_SAMPLING_FREQUENCY);
+        ROS_INFO("trajectory successfully created!");
+        
         std::string demo_joint_file_name = "rollout_joint_demonstration.clmc";
         std::string abs_demo_file_name_joint_states = package_path + "/demonstrations/" + demo_joint_file_name;
         trajectory.writeToCLMCFile(abs_demo_file_name_joint_states);
@@ -124,7 +126,7 @@ namespace dmp_behaviors
         std::string dmp_bag_file_name = "joint_space_dmp.bag";
         std::string abs_dmp_bag_file_name = package_path + "/demonstrations/" + dmp_bag_file_name;
         dmp::NC2010DynamicMovementPrimitive::writeToDisc(nc2010_dmp, abs_dmp_bag_file_name);
-
+        /*
         // propagate the learned dmp.
         nc2010_dmp->setup();
         double initial_duration = 0;
@@ -208,6 +210,8 @@ namespace dmp_behaviors
         std::cout << abs_bag_file_name << std::endl;
         
         ros::shutdown();
+        */
+        
     }
 
 

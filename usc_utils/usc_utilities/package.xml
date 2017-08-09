@@ -43,6 +43,7 @@
   <run_depend>rostest</run_depend>
   <run_depend>trajectory_msgs</run_depend>
   <run_depend>bspline</run_depend>
+
   
   
   <!-- <depend package="bspline"/> -->

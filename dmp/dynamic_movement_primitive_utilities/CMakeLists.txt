@@ -32,6 +32,7 @@ find_package(catkin REQUIRED COMPONENTS
   filters
   dynamic_movement_primitive
   cmake_modules
+  task_recorder
 )
 
 find_package(Boost REQUIRED COMPONENTS thread signals system filesystem)
@@ -49,7 +50,7 @@ include_directories(${GTEST_INCLUDE_DIRS})
 
 catkin_package(INCLUDE_DIRS include
                LIBRARIES ${PROJECT_NAME}
-               CATKIN_DEPENDS roscpp rosbag geometry_msgs sensor_msgs usc_utilities visualization_utilities inverse_kinematics robot_info filters dynamic_movement_primitive cmake_modules 
+               CATKIN_DEPENDS roscpp rosbag geometry_msgs sensor_msgs usc_utilities visualization_utilities inverse_kinematics robot_info filters dynamic_movement_primitive cmake_modules task_recorder 
                DEPENDS Eigen Eigen3 Boost)
 
 include_directories(

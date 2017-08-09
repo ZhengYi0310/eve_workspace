@@ -33,6 +33,7 @@
   <run_depend>filters</run_depend>
   <run_depend>dynamic_movement_primitive</run_depend>
   <run_depend>cmake_modules</run_depend>
+  <run_depend>gtest</run_depend>
 
 
   <export>

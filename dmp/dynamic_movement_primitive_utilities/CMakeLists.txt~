@@ -32,6 +32,7 @@ find_package(catkin REQUIRED COMPONENTS
   filters
   dynamic_movement_primitive
   cmake_modules
+  task_recorder
 )
 
 find_package(Boost REQUIRED COMPONENTS thread signals system filesystem)
@@ -41,8 +42,8 @@ add_definitions(${Boost_DEFINITIONS})
 find_package(Eigen REQUIRED)
 include_directories(${Eigen_INCLUDE_DIRS})
 
-find_package(Eigen3 REQUIRED)
-include_directories(${Eigen3_INCLUDE_DIRS})
+#find_package(Eigen3 REQUIRED)
+#include_directories(${Eigen3_INCLUDE_DIRS})
 
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})

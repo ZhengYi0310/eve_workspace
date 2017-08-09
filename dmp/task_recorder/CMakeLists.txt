@@ -35,7 +35,6 @@ find_package(catkin REQUIRED COMPONENTS
   usc_utilities
   message_generation
   dynamic_movement_primitive 
-  dynamic_movement_primitive_utilities
   rosbag
 )
 
@@ -102,7 +101,7 @@ generate_messages(DEPENDENCIES std_msgs sensor_msgs geometry_msgs)
 
 catkin_package(INCLUDE_DIRS include
                LIBRARIES task_recorder_utilities ${PROJECT_NAME} task_recorder_manager task_recorder_manager_client
-	       CATKIN_DEPENDS roscpp rosbag tf filters message_filters sensor_msgs std_msgs geometry_msgs angles usc_utilities message_runtime dynamic_movement_primitive dynamic_movement_primitive_utilities rosbag
+	       CATKIN_DEPENDS roscpp rosbag tf filters message_filters sensor_msgs std_msgs geometry_msgs angles usc_utilities message_runtime dynamic_movement_primitive rosbag
                DEPENDS Eigen Orocos_kdl Boost)
 
 add_library(task_recorder_utilities

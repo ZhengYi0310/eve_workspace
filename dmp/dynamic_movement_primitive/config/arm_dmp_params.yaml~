@@ -232,7 +232,7 @@ joint_space_dmp:
   LEFT_ARM:
     # transformation system parameters
     transformation_systems_parameters:
-      -
+      -LEFT_ARM
         name: "L_SFE"
         ICRA2009:
           k_gain: 200.0

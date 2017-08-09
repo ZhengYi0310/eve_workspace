@@ -37,6 +37,7 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
   rosbag
   sensor_msgs
+  task_recorder
   bspline
 )
 
@@ -70,7 +71,7 @@ include_directories(
 
 catkin_package(INCLUDE_DIRS include
                LIBRARIES usc_utilities
-	       CATKIN_DEPENDS rostest cmake_modules geometry_msgs std_msgs message_runtime roscpp roslib tf trajectory_msgs rosconsole kdl_parser visualization_msgs rosbag bspline
+	       CATKIN_DEPENDS rostest cmake_modules geometry_msgs std_msgs message_runtime roscpp roslib tf trajectory_msgs rosconsole kdl_parser visualization_msgs rosbag bspline task_recorder
                DEPENDS Eigen Eigen3 Orocos_kdl)
 
 add_library(usc_utilities
@@ -81,6 +82,7 @@ add_library(usc_utilities
 	src/sl_config_file_handler.cpp
 )
 target_link_libraries(usc_utilities ${orocos_kdl_LIBRARIES} ${catkin_LIBRARIES})
+add_dependencies(usc_utilities ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS} usc_utilities_gencpp)
 
 
 
