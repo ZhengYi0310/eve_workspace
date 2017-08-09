@@ -54,6 +54,12 @@ template<class DMPType>
                                  const std::vector<std::string>& robot_part_names,
                                  const double sampling_frequency = robot_info::RobotInfo::DEFAULT_SAMPLING_FREQUENCY);
 
+    static bool learnJointSpaceDMPFromDataSampleMsgs(typename DMPType::DMPPtr& dmp,
+                                                     ros::NodeHandle& node_handle,
+                                                     const std::string& abs_bag_file_name,
+                                                     const std::vector<std::string>& robot_part_names,
+                                                     const double sampling_frequency = robot_info::RobotInfo::DEFAULT_SAMPLING_FREQUENCY);
+
     /*!
      * @param dmp
      * @param node_handle
@@ -276,6 +282,12 @@ template<class DMPType>
                                            const std::vector<std::string>& robot_part_names,
                                            const double sampling_frequency);
 
+    static bool createJointStateTrajectoryFromDataSamples(typename DMPType::DMPPtr& dmp,
+                                                          dmp_lib::Trajectory& trajectory,
+                                                          const std::string& abs_bag_file_name,
+                                                          const std::vector<std::string>& robot_part_names,
+                                                          const double sampling_frequency);
+
     /*!
      * @param dmp
      * @param trajectory
@@ -324,6 +336,32 @@ template<class DMPType>
       dmp_lib::Trajectory joint_trajectory;
       std::vector<std::string> dmp_joint_variable_names = dmp->getVariableNames();
       robot_info::RobotInfo::extractJointNames(dmp_joint_variable_names);
+      ROS_VERIFY(TrajectoryUtilities::createJointStateTrajectory(joint_trajectory, dmp_joint_variable_names, abs_bag_file_name, sampling_frequency));
+
+      if (trajectory.isInitialized())
+      {
+        ROS_VERIFY(trajectory.cutAndCombine(joint_trajectory));
+      }
+      else
+      {
+        trajectory = joint_trajectory;
+      }
+    }
+    return true;
+  }
+
+template<class DMPType>
+  bool DynamicMovementPrimitiveLearner<DMPType>::createJointStateTrajectoryFromDataSamples(typename DMPType::DMPPtr& dmp,
+                                                                            dmp_lib::Trajectory& trajectory,
+                                                                            const std::string& abs_bag_file_name,
+                                                                            const std::vector<std::string>& robot_part_names,
+                                                                            const double sampling_frequency)
+  {
+    if (robot_info::RobotInfo::containsJointParts(robot_part_names))
+    {
+      dmp_lib::Trajectory joint_trajectory;
+      std::vector<std::string> dmp_joint_variable_names = dmp->getVariableNames();
+      robot_info::RobotInfo::extractJointNames(dmp_joint_variable_names);
       ROS_VERIFY(TrajectoryUtilities::createJointStateTrajectoryFromDataSamples(joint_trajectory, dmp_joint_variable_names, abs_bag_file_name, sampling_frequency));
 
       if (trajectory.isInitialized())
@@ -337,6 +375,7 @@ template<class DMPType>
     }
     return true;
   }
+  
 
 template<class DMPType>
   bool DynamicMovementPrimitiveLearner<DMPType>::createWrenchTrajectory(typename DMPType::DMPPtr& dmp,
@@ -392,6 +431,36 @@ template<class DMPType>
     dmp->changeType(dynamic_movement_primitive::TypeMsg::DISCRETE_JOINT_SPACE);
     return true;
   }
+    
+template<class DMPType>
+  bool DynamicMovementPrimitiveLearner<DMPType>::learnJointSpaceDMPFromDataSampleMsgs(typename DMPType::DMPPtr& dmp,
+                                                                                      ros::NodeHandle& node_handle,
+                                                                                      const std::string& abs_bag_file_name,
+                                                                                      const std::vector<std::string>& robot_part_names,
+                                                                                      const double sampling_frequency)
+  {
+    ROS_INFO("Learning joint space DMP from file >%s< with the following robot parts:", abs_bag_file_name.c_str());
+    for (int i = 0; i < (int)robot_part_names.size(); ++i)
+    {
+      ROS_INFO("- >%s<", robot_part_names[i].c_str());
+    }
+    ros::NodeHandle joint_space_node_handle(node_handle, "joint_space_dmp");
+
+    // initialize dmp from node handle
+    ROS_VERIFY(DMPType::initFromNodeHandle(dmp, robot_part_names, joint_space_node_handle));
+
+    // read joint space trajectory from bag file
+    dmp_lib::Trajectory trajectory;
+
+    ROS_VERIFY(DynamicMovementPrimitiveLearner<DMPType>::createJointStateTrajectoryFromDataSamples(dmp, trajectory, abs_bag_file_name, robot_part_names, sampling_frequency));
+    ROS_VERIFY(DynamicMovementPrimitiveLearner<DMPType>::createWrenchTrajectory(dmp, trajectory, abs_bag_file_name, robot_part_names, sampling_frequency));
+
+    // learn dmp
+    ROS_VERIFY(dmp->learnFromTrajectory(trajectory));
+    dmp->changeType(dynamic_movement_primitive::TypeMsg::DISCRETE_JOINT_SPACE);
+    return true;
+  }
+  
 
 template<class DMPType>
   bool DynamicMovementPrimitiveLearner<DMPType>::learnDMPFromMinJerk(typename DMPType::DMPPtr& dmp,
