@@ -87,19 +87,28 @@ namespace wam_dmp_controller
             joint_position_controllers_[i]->starting(time);
             //joint_position_controllers_[i].starting(time);
         }
-		
+	    
+        /*
+        if (dmp_controller_->newDMPReady())
+        {
+            // set start of DMP to current desited position 
+            ROS_VERIFY(dmp_controller_->changeDMPStart(desired_positions_));
+        }
+        */
+        
         holdPositions();
     }
 
     // REAL-TIME REQUIREMENTS
     void DMPJointPositionController::update(const ros::Time &time, const ros::Duration &period)
     {
-        
+         
         if (dmp_controller_->newDMPReady())
         {
             // set start of DMP to current desited position 
             ROS_VERIFY(dmp_controller_->changeDMPStart(desired_positions_));
         }
+        
         
         if (dmp_controller_->isRunning(desired_positions_, desired_velocities_, desired_accelerations_))
         {

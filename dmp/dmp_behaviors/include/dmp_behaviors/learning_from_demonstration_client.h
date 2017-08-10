@@ -115,7 +115,7 @@ namespace dmp_behaviors
         dmp_lib::Trajectory trajectory;
         dmp_utilities::TrajectoryUtilities::createJointStateTrajectoryFromDataSamples(trajectory, joint_variable_names, abs_bag_file_name, robot_info::RobotInfo::DEFAULT_SAMPLING_FREQUENCY);
         ROS_INFO("trajectory successfully created!");
-        
+                
         std::string demo_joint_file_name = "rollout_joint_demonstration.clmc";
         std::string abs_demo_file_name_joint_states = package_path + "/demonstrations/" + demo_joint_file_name;
         trajectory.writeToCLMCFile(abs_demo_file_name_joint_states);
@@ -126,9 +126,10 @@ namespace dmp_behaviors
         std::string dmp_bag_file_name = "joint_space_dmp.bag";
         std::string abs_dmp_bag_file_name = package_path + "/demonstrations/" + dmp_bag_file_name;
         dmp::NC2010DynamicMovementPrimitive::writeToDisc(nc2010_dmp, abs_dmp_bag_file_name);
-        /*
+        
         // propagate the learned dmp.
         nc2010_dmp->setup();
+        
         double initial_duration = 0;
         nc2010_dmp->getInitialDuration(initial_duration);
 
@@ -137,24 +138,27 @@ namespace dmp_behaviors
         // change the goal 
         VectorXd new_goal = VectorXd::Zero(nc2010_dmp->getNumDimensions());
         nc2010_dmp->getInitialGoal(new_goal);
+        /*
         for (int i = 0; i < nc2010_dmp->getNumDimensions(); i++)
         {
             new_goal(i) = new_goal(i) + 3.14 / 12;
         }
         nc2010_dmp->changeGoal(new_goal);
-        //  
-        nc2010_dmp->propagateFull(rollout, initial_duration, trajectory.getNumContainedSamples() * 1.5);
+        //
+        */
+        nc2010_dmp->propagateFull(rollout, initial_duration, trajectory.getNumContainedSamples());
         std::string rollout_joint_file_name = "rollout_joint_reproduction.clmc";
         std::string abs_rollout_joint_file_name = package_path + "/demonstrations/" + rollout_joint_file_name;
         rollout.writeToCLMCFile(abs_rollout_joint_file_name);
 
         trajectory_msgs::JointTrajectory JointTrajectory;
         JointTrajectory.joint_names.resize(rollout.getDimension());
+        ROS_ASSERT(JointTrajectory.joint_names.size() == rollout.getVariableNames().size());
         for (int i = 0; i < rollout.getDimension(); i++)
         {
             std::ostringstream ss;
             ss << i;
-            JointTrajectory.joint_names[i] = "joint_" + ss.str();
+            JointTrajectory.joint_names[i] = (rollout.getVariableNames())[i];
         }
         std::cout << std::endl << rollout.getNumContainedSamples() << " " << rollout.getNumTotalCapacity()  << " " << rollout.getSamplingFrequency() << std::endl;
     
@@ -176,14 +180,14 @@ namespace dmp_behaviors
             }
         }
 
-        //for (int i = 0; i < JointTrajectory.points.size() ; i++)
-        //{
-        //    for (int j = 0; j < rollout.getDimension(); j++)
-        //    {
-        //        std::cout << JointTrajectory.points[i].positions[j] << " ";
-        //    }
-        //    std::cout << std::endl;
-        //}
+        for (int i = 0; i < 10; i++)
+        {
+            for (int j = 0; j < rollout.getDimension(); j++)
+            {
+                std::cout << JointTrajectory.points[i].positions[j] << " ";
+            }
+            std::cout << std::endl;
+        }
 
         std::string topic_name = "/trajectory_msgs";
         std::string msg_bag_file_name = "dmp_rollout_newgoal.bag";
@@ -210,7 +214,7 @@ namespace dmp_behaviors
         std::cout << abs_bag_file_name << std::endl;
         
         ros::shutdown();
-        */
+        
         
     }
 

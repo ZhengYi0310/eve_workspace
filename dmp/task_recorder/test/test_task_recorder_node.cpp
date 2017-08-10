@@ -55,11 +55,11 @@ int main(int argc, char** argv)
   arm_cartesian_state_recorder.startRecording();
   //biotac_state_recorder.startRecording();
 
-  ros::Time start_time = joint_states_recorder.getStartRecordingResponse().start_time + ros::Duration(1.0);
-  ros::WallDuration(5.0).sleep();
+  ros::Time start_time = arm_cartesian_state_recorder.getStartRecordingResponse().start_time;
+  ros::WallDuration(20).sleep();
   //ros::Time end_time = joint_states_recorder.getStartRecordingResponse().start_time + ros::Duration (4.0);
-  ros::Time end_time = start_time + ros::Duration(4.0);
-  const int num_samples = 100;
+  ros::Time end_time = start_time + ros::Duration(15);
+  const int num_samples = 200;
   ROS_INFO("Stopping recording...");
 
   joint_states_recorder.stopRecording(start_time, end_time, num_samples);

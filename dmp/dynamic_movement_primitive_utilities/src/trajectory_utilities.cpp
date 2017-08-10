@@ -27,6 +27,7 @@
 #include <sensor_msgs/JointState.h>
 #include <geometry_msgs/WrenchStamped.h>
 #include <task_recorder/DataSample.h>
+#include <trajectory_msgs/JointTrajectory.h>
 
 #include <dynamic_movement_primitive/dynamic_movement_primitive.h>
 #include <dynamic_movement_primitive/TypeMsg.h>
@@ -217,11 +218,12 @@ bool TrajectoryUtilities::createJointStateTrajectoryFromDataSamples(dmp_lib::Tra
                 if(vsi->compare(variable_names[i] + "_pos") == 0)
                 {
                     joint_positions(i) = ci->data[index];
+                    //ROS_INFO("position data for joint >%s<: %f", variable_names[i].c_str(), ci->data[index]);
                     //ROS_INFO("joint: >%s<",variable_names[i].c_str());
                     num_joints_found++;
+                    index = index + 3;
                 }
             }
-            index = index + 3;
         }
 
         // check whether all variable names were found
@@ -233,8 +235,55 @@ bool TrajectoryUtilities::createJointStateTrajectoryFromDataSamples(dmp_lib::Tra
         // add data
         ROS_VERIFY(trajectory.add(joint_positions));
         ros::Time stamp(ci->data[(ci->data).size() - 1]);
-        time_stamps.push_back(stamp);
+        time_stamps.push_back(stamp); 
     }
+    /*
+    //////////////////
+    trajectory_msgs::JointTrajectory JointTrajectory_before;
+    JointTrajectory_before.joint_names.resize(trajectory.getDimension());
+    ROS_ASSERT(JointTrajectory_before.joint_names.size() == trajectory.getVariableNames().size());
+    for (int i = 0; i < trajectory.getDimension(); i++)
+    {
+        std::ostringstream ss;
+        ss << i;
+        JointTrajectory_before.joint_names[i] = (trajectory.getVariableNames())[i];
+    }
+    std::cout << std::endl << trajectory.getNumContainedSamples() << " " << trajectory.getNumTotalCapacity()  << " " << trajectory.getSamplingFrequency() << std::endl;
+    
+    double sampling_frequency_temp = trajectory.getSamplingFrequency();
+    JointTrajectory_before.points.resize(trajectory.getNumContainedSamples());
+
+    for (int i = 0; i < JointTrajectory_before.points.size(); i++)
+    {
+        JointTrajectory_before.points[i].positions.resize(trajectory.getDimension());
+        JointTrajectory_before.points[i].velocities.resize(trajectory.getDimension());
+        JointTrajectory_before.points[i].accelerations.resize(trajectory.getDimension());
+        JointTrajectory_before.points[i].time_from_start = ros::Duration(i / sampling_frequency_temp);
+
+        for (int j = 0; j < trajectory.getDimension(); j++)
+        {
+            trajectory.getTrajectoryPosition(i, j, JointTrajectory_before.points[i].positions[j]);
+            //trajectory.getTrajectoryVelocity(i, j, JointTrajectory_before.points[i].velocities[j]);
+            //trajectory.getTrajectoryAcceleration(i, j, JointTrajectory_before.points[i].accelerations[j]);
+        }
+    }
+
+    for (int i = 0; i < 10; i++)
+    {
+        for (int j = 0; j < trajectory.getDimension(); j++)
+        {
+            std::cout << JointTrajectory_before.points[i].positions[j] << " ";
+        }
+        std::cout << std::endl;
+    }
+
+    for (int i = 0; i < trajectory.getDimension(); i++)
+    {
+        std::cout << JointTrajectory_before.joint_names[i] << " ";
+    }
+    
+    /////////////////////////////
+    */
     ROS_VERIFY(TrajectoryUtilities::resample(trajectory, time_stamps, sampling_frequency, compute_derivatives));
     return true;
 }

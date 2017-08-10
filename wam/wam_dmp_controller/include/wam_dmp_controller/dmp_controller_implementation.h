@@ -138,6 +138,8 @@ namespace wam_dmp_controller
              */
             std::string abs_bag_file_name_;
 
+            bool movement_finished_;
+
             /*!
              */
             //rosrt::Subscriber<geometry_msgs::PoseStamped> dmp_goal_subscriber_; 
@@ -189,6 +191,7 @@ namespace wam_dmp_controller
         
         dmp_is_being_executed_ = false;
         dmp_is_set_ = false;
+        movement_finished_ = false;
 
         return (initialized_ = true);
     }
@@ -255,7 +258,7 @@ namespace wam_dmp_controller
     template<class DMPType>
     bool DMPControllerImplementation<DMPType>::setDMP(typename DMPType::DMPPtr dmp, bool strict)
     {
-        if (dmp->isSetup())
+        if (dmp->setup())
         {
             variable_name_map_.reset();
             num_variables_used_ = 0;
@@ -296,7 +299,7 @@ namespace wam_dmp_controller
     bool DMPControllerImplementation<DMPType>::newDMPReady()
     {
         // Maybe change it to read the DMP from binary file
-        if (!dmp_is_being_executed_)
+        if (!dmp_is_being_executed_ && !movement_finished_)
         {
             typename DMPType::DMPPtr dmp;
             //dmp = dmp_filtered_subscriber_.poll();  Can't use the poll based subscriber from rosrt because it messes up with the threading 
@@ -338,6 +341,7 @@ namespace wam_dmp_controller
             {
                 publishStatus(dynamic_movement_primitive::ControllerStatusMsg::FINISHED, movement_finished, ros::Time::now());
                 dmp_is_being_executed_ = false;
+                movement_finished_ = true;
             }
 
             return dmp_is_being_executed_;

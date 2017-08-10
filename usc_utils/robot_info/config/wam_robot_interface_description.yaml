@@ -19,4 +19,4 @@ right_endeffector_orientation_variable_names: ["r_arm_qw", "r_arm_qx", "r_arm_qy
 left_endeffector_position_variable_names: ["l_arm_x", "l_arm_y", "l_arm_z"]
 left_endeffector_orientation_variable_names: ["l_arm_qw", "l_arm_qx", "l_arm_qy", "l_arm_qz"]
 
-default_sampling_frequency: 1000.0
+default_sampling_frequency: 250.0

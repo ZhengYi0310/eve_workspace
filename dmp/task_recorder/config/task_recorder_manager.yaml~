@@ -1,4 +1,4 @@
-sampling_rate: 200
+sampling_rate: 1000
 
 task_recorders:
   -

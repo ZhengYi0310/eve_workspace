@@ -1,6 +1,6 @@
 robot_name: WAM
 
-robot_part_names: ["right_arm", "left_arm"]
+robot_part_names: ["left_arm"]
 
 robot_part_right_arm: "right_arm"
 robot_part_right_hand: ""
@@ -8,7 +8,7 @@ robot_part_right_hand: ""
 robot_part_left_arm: "left_arm"
 robot_part_left_hand: ""
 
-robot_part_names_containing_joints: ["right_arm", "left_arm"]
+robot_part_names_containing_joints: ["left_arm"]
 robot_part_names_containing_wrenches: []
 robot_part_names_containing_strain_gauges: []
 robot_part_names_containing_accelerations: []
