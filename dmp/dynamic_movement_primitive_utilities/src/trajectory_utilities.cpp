@@ -364,7 +364,24 @@ bool TrajectoryUtilities::createJointStateTrajectory(dmp_lib::Trajectory& trajec
   ROS_VERIFY(TrajectoryUtilities::resample(trajectory, time_stamps, sampling_frequency, compute_derivatives));
   return true;
 }
+bool TrajectoryUtilities::createPoseTrajectoryFromDataSampleBagFile(dmp_lib::Trajectory& pose_trajectory,
+                                                                    const std::string& abs_bag_file_name,
+                                                                    const std::vector<std::string>& variable_names,
+                                                                    const double sampling_frequency,
+                                                                    const std::string& topic_name)
+{
+    if (variable_names.empty())
+    {
+        ROS_ERROR("There are no variable names provided. Cannot create pose trajectory.");
+        return false;
+    }
 
+    // read all data sample messages from a bag file 
+    std::vector<DataSampleMsg> data_sample_msgs;
+    ROS_VERIFY(usc_utilities::FileIO<DataSampleMsg>::readFromBagFile(data_sample_msgs, topic_name, abs_bag_file_name));
+
+    return TrajectoryUtilities::createPoseTrajectoryFromDataSampleMsg(pose_trajectory, data_sample_msgs, variable_names, sampling_frequency);
+}
 bool TrajectoryUtilities::createPoseTrajectoryFromPoseBagFile(dmp_lib::Trajectory& pose_trajectory,
 														  const std::string& abs_bag_file_name,
 														  const std::vector<string>& variable_names,
@@ -386,6 +403,39 @@ bool TrajectoryUtilities::createPoseTrajectoryFromPoseBagFile(dmp_lib::Trajector
 }
 
 
+bool TrajectoryUtilities::createPoseTrajectoryFromDataSampleMsg(dmp_lib::Trajectory& pose_trajectory,
+                                                                const std::vector<DataSampleMsg>& data_samples,
+                                                                const std::vector<string>& variable_names,
+                                                                const double samplingFrequency)
+{
+    if (variable_names.empty())
+    {
+        ROS_ERROR("There are no variable names provided. Cannot create pose trajectory.");
+        return false;
+    }
+    ROS_INFO("Got >%i< data sample messages", (int)data_samples.size());
+
+    const int num_trajectory_points = static_cast<int>(data_samples.size());
+    ROS_VERIFY(pose_trajectory.initialize(variable_names, samplingFrequency, true, num_trajectory_points));
+
+    Eigen::VectorXd endeffector_pose = VectorXd::Zero(usc_utilities::Constants::N_CART + usc_utilities::Constants::N_QUAT);
+
+    for (int i = 0; i < num_trajectory_points; i++)
+    {
+        endeffector_pose(usc_utilities::Constants::X) = data_samples[i].data[usc_utilities::Constants::X];
+        endeffector_pose(usc_utilities::Constants::Y) = data_samples[i].data[usc_utilities::Constants::Y];
+        endeffector_pose(usc_utilities::Constants::Z) = data_samples[i].data[usc_utilities::Constants::Z];
+
+        endeffector_pose(usc_utilities::Constants::N_CART + usc_utilities::Constants::QW) = data_samples[i].data[usc_utilities::Constants::N_CART + usc_utilities::Constants::QW];
+        endeffector_pose(usc_utilities::Constants::N_CART + usc_utilities::Constants::QX) = data_samples[i].data[usc_utilities::Constants::N_CART + usc_utilities::Constants::QX];
+        endeffector_pose(usc_utilities::Constants::N_CART + usc_utilities::Constants::QY) = data_samples[i].data[usc_utilities::Constants::N_CART + usc_utilities::Constants::QY];
+        endeffector_pose(usc_utilities::Constants::N_CART + usc_utilities::Constants::QZ) = data_samples[i].data[usc_utilities::Constants::N_CART + usc_utilities::Constants::QZ];
+
+        ROS_VERIFY(pose_trajectory.add(endeffector_pose));
+    }
+
+    return true;
+}
 
 bool TrajectoryUtilities::createPoseTrajectoryFromPoseMsg(dmp_lib::Trajectory& pose_trajectory,
 														  const std::vector<geometry_msgs::PoseStamped>& pose_msgs,

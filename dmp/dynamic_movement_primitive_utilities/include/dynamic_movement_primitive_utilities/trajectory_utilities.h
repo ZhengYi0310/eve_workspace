@@ -27,6 +27,7 @@
 
 #include <filters/transfer_function.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <task_recorder/DataSample.h>
 
 #include <dmp_lib/dynamic_movement_primitive_base.h>
 #include <dmp_lib/trajectory.h>
@@ -125,6 +126,17 @@ public:
 											  const std::vector<std::string>& variable_names,
 											  const double samplingFrequency = robot_info::RobotInfo::DEFAULT_SAMPLING_FREQUENCY,
 											  const std::string& topic_name = "/cart_trajectory");
+
+  static bool createPoseTrajectoryFromDataSampleBagFile(dmp_lib::Trajectory& pose_trajectory,
+                                                        const std::string& abs_bag_file_name,
+                                                        const std::vector<std::string>& variable_names,
+                                                        const double samplingFrequency = robot_info::RobotInfo::DEFAULT_SAMPLING_FREQUENCY,
+                                                        const std::string& topic_name = "/cartesian_pose");
+
+  static bool createPoseTrajectoryFromDataSampleMsg(dmp_lib::Trajectory& pose_trajectory,
+                                                    const std::vector<task_recorder::DataSample>& data_samples,
+                                                    const std::vector<std::string>& variable_names,
+                                                    const double samplingFrequency = robot_info::RobotInfo::DEFAULT_SAMPLING_FREQUENCY);
 
   /*!
    * @param pose_trajectory - result of the funciton

@@ -294,7 +294,6 @@ namespace dmp_lib
         {
             case NORMAL:
             {
-				Logger::logPrintf(">>>>>Roll out DMP model with NORMAL integration method!<<<<<");
                 double dt = dmp_time.getDeltaT() / static_cast<double> (num_iterations);
                 for (int i = 0; i < getNumDimensions(); ++i)
                 {
@@ -330,7 +329,7 @@ namespace dmp_lib
     
             case QUATERNION:
             {
-				Logger::logPrintf(">>>>>Roll out DMP model with QUATERNION integration method!<<<<<");
+
                 double dt = dmp_time.getDeltaT() / static_cast<double> (num_iterations);
                 for (int n = 0; n < num_iterations; ++n)
                 {
