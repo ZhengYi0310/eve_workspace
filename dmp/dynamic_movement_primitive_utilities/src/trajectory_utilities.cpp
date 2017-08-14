@@ -419,7 +419,8 @@ bool TrajectoryUtilities::createPoseTrajectoryFromDataSampleMsg(dmp_lib::Traject
     ROS_VERIFY(pose_trajectory.initialize(variable_names, samplingFrequency, true, num_trajectory_points));
 
     Eigen::VectorXd endeffector_pose = VectorXd::Zero(usc_utilities::Constants::N_CART + usc_utilities::Constants::N_QUAT);
-
+    vector<ros::Time> time_stamps;
+    
     for (int i = 0; i < num_trajectory_points; i++)
     {
         endeffector_pose(usc_utilities::Constants::X) = data_samples[i].data[usc_utilities::Constants::X];
@@ -432,8 +433,53 @@ bool TrajectoryUtilities::createPoseTrajectoryFromDataSampleMsg(dmp_lib::Traject
         endeffector_pose(usc_utilities::Constants::N_CART + usc_utilities::Constants::QZ) = data_samples[i].data[usc_utilities::Constants::N_CART + usc_utilities::Constants::QZ];
 
         ROS_VERIFY(pose_trajectory.add(endeffector_pose));
+        time_stamps.push_back(data_samples[i].header.stamp);
     }
 
+    trajectory_msgs::JointTrajectory cart_trajectory;
+    cart_trajectory.joint_names.resize(pose_trajectory.getDimension());
+    ROS_ASSERT(cart_trajectory.joint_names.size() == pose_trajectory.getVariableNames().size());
+    for (int i = 0; i < pose_trajectory.getDimension(); i++)
+    {
+        std::ostringstream ss;
+        ss << i;
+        cart_trajectory.joint_names[i] = (pose_trajectory.getVariableNames())[i];
+    }
+    std::cout << std::endl << pose_trajectory.getNumContainedSamples() << " " << pose_trajectory.getNumTotalCapacity()  << " " << pose_trajectory.getSamplingFrequency() << std::endl;
+    
+    double sampling_frequency_temp = pose_trajectory.getSamplingFrequency();
+    cart_trajectory.points.resize(pose_trajectory.getNumContainedSamples());
+
+    for (int i = 0; i < cart_trajectory.points.size(); i++)
+    {
+        cart_trajectory.points[i].positions.resize(pose_trajectory.getDimension());
+        cart_trajectory.points[i].velocities.resize(pose_trajectory.getDimension());
+        cart_trajectory.points[i].accelerations.resize(pose_trajectory.getDimension());
+        cart_trajectory.points[i].time_from_start = ros::Duration(i / sampling_frequency_temp);
+
+        for (int j = 0; j < pose_trajectory.getDimension(); j++)
+        {
+            pose_trajectory.getTrajectoryPosition(i, j, cart_trajectory.points[i].positions[j]);
+            //trajectory.getTrajectoryVelocity(i, j, JointTrajectory_before.points[i].velocities[j]);
+            //trajectory.getTrajectoryAcceleration(i, j, JointTrajectory_before.points[i].accelerations[j]);
+        }
+    }
+
+    for (int i = 0; i < 10; i++)
+    {
+        for (int j = 0; j < pose_trajectory.getDimension(); j++)
+        {
+            std::cout << cart_trajectory.points[i].positions[j] << " ";
+        }
+        std::cout << std::endl;
+    }
+
+    for (int i = 0; i < pose_trajectory.getDimension(); i++)
+    {
+        std::cout << cart_trajectory.joint_names[i] << " ";
+    }
+    
+    ROS_VERIFY(TrajectoryUtilities::resample(pose_trajectory, time_stamps, samplingFrequency, true));    
     return true;
 }
 

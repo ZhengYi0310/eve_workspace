@@ -19,9 +19,7 @@ int main(int argc, char** argv)
     ros::NodeHandle node_handle("lfd_client");
     std::string action_name = "LearningFromDemonstration";
     std::string joint_states_bag_name = "joint_states_wam.bag";
-	std::string cartesian_states_bag_name = "cartesian_states_wam.bag";
-    //dmp_behaviors::LearningFromDemonstrationClient learning_from_demonstration_client(node_handle, action_name, joint_states_bag_name);
-    dmp_behaviors::LearningFromDemonstrationClient learning_from_demonstration_client(node_handle, action_name, cartesian_states_bag_name);
+    dmp_behaviors::LearningFromDemonstrationClient learning_from_demonstration_client(node_handle, action_name, joint_states_bag_name);
     learning_from_demonstration_client.waitForServer();
     learning_from_demonstration_client.sendGoal();
     ros::spin();

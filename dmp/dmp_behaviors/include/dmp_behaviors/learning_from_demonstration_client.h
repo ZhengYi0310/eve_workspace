@@ -108,22 +108,27 @@ namespace dmp_behaviors
         robot_part_names.push_back("left_arm");
 
         robot_info::init();
-        std::vector<std::string> joint_variable_names;
-        robot_info::RobotInfo::getArmJointNames(robot_part_names, joint_variable_names);
+        //std::vector<std::string> joint_variable_names;
+        //robot_info::RobotInfo::getArmJointNames(robot_part_names, joint_variable_names);
+        std::vector<std::string> endeffector_names;
+        endeffector_names = robot_info::RobotInfo::getEndeffectorNames(robot_info::RobotInfo::getHandEndeffectorId(robot_part_names[0] + "_hand"));
 
         // read the bag file and recreate the trajectory.
         dmp_lib::Trajectory trajectory;
-        dmp_utilities::TrajectoryUtilities::createJointStateTrajectoryFromDataSamples(trajectory, joint_variable_names, abs_bag_file_name, robot_info::RobotInfo::DEFAULT_SAMPLING_FREQUENCY);
+        //dmp_utilities::TrajectoryUtilities::createPoseTrajectoryFromDataSampleBagFile(trajectory, abs_bag_file_name, joint_variable_names, robot_info::RobotInfo::DEFAULT_SAMPLING_FREQUENCY);
+        dmp_utilities::TrajectoryUtilities::createPoseTrajectoryFromDataSampleBagFile(trajectory, abs_bag_file_name, endeffector_names, robot_info::RobotInfo::DEFAULT_SAMPLING_FREQUENCY);
         ROS_INFO("trajectory successfully created!");
-                
+        
+        
         std::string demo_joint_file_name = "rollout_joint_demonstration.clmc";
         std::string abs_demo_file_name_joint_states = package_path + "/demonstrations/" + demo_joint_file_name;
         trajectory.writeToCLMCFile(abs_demo_file_name_joint_states);
 
-        // learn a dmp and write it to disc 
+        /*
+        // learn a dmp and write it to disc
         dmp_lib::NC2010DMPPtr nc2010_dmp;
-        DynamicMovementPrimitiveLearner<dmp::NC2010DMP>::learnJointSpaceDMPFromDataSampleMsgs(nc2010_dmp, node_handle_tmp, abs_bag_file_name, robot_part_names);
-        std::string dmp_bag_file_name = "joint_space_dmp.bag";
+        DynamicMovementPrimitiveLearner<dmp::NC2010DMP>::learnCartesianSpaceDMPFromDataSamples(nc2010_dmp, node_handle_tmp, abs_bag_file_name, robot_part_names);
+        std::string dmp_bag_file_name = "cartesian_space_dmp.bag";
         std::string abs_dmp_bag_file_name = package_path + "/demonstrations/" + dmp_bag_file_name;
         dmp::NC2010DynamicMovementPrimitive::writeToDisc(nc2010_dmp, abs_dmp_bag_file_name);
         
@@ -134,11 +139,12 @@ namespace dmp_behaviors
         nc2010_dmp->getInitialDuration(initial_duration);
 
         dmp_lib::Trajectory rollout;
-
+        */
+        /*
         // change the goal 
         VectorXd new_goal = VectorXd::Zero(nc2010_dmp->getNumDimensions());
         nc2010_dmp->getInitialGoal(new_goal);
-        /*
+        
         for (int i = 0; i < nc2010_dmp->getNumDimensions(); i++)
         {
             new_goal(i) = new_goal(i) + 3.14 / 12;
@@ -146,6 +152,7 @@ namespace dmp_behaviors
         nc2010_dmp->changeGoal(new_goal);
         //
         */
+        /*
         nc2010_dmp->propagateFull(rollout, initial_duration, trajectory.getNumContainedSamples());
         std::string rollout_joint_file_name = "rollout_joint_reproduction.clmc";
         std::string abs_rollout_joint_file_name = package_path + "/demonstrations/" + rollout_joint_file_name;
@@ -212,9 +219,9 @@ namespace dmp_behaviors
         }
 
         std::cout << abs_bag_file_name << std::endl;
-        
+        */    
         ros::shutdown();
-        
+    
         
     }
 

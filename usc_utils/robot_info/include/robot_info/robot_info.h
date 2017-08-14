@@ -300,6 +300,7 @@ public:
   static const std::vector<std::string>& getRightEndeffectorOrientationNames();
   static const std::vector<std::string>& getLeftEndeffectorOrientationNames();
 
+  static const std::vector<std::string> getEndeffectorNames(const int endeffecor_id);
   /*!
    * @param robot_part
    * @param joint_infos

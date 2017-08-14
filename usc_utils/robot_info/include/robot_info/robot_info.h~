@@ -51,7 +51,7 @@ struct JointInfo
   double min_position_;         /**< Min joint limit */
   double max_position_;         /**< Max joint limit */
 
-  // double preferred_velocity_;
+  double preferred_velocity_;
 };
 
 class RobotInfo
@@ -300,6 +300,7 @@ public:
   static const std::vector<std::string>& getRightEndeffectorOrientationNames();
   static const std::vector<std::string>& getLeftEndeffectorOrientationNames();
 
+  static const std::vector<std::string>& getEndeffectorNames(const int endeffecor_id);
   /*!
    * @param robot_part
    * @param joint_infos

@@ -17,7 +17,7 @@
 #include <task_recorder/arm_cartesian_state_recorder.h>
 #include <task_recorder/biotac_state_recorder.h>
 #include <task_recorder/task_recorder_client.h>
-
+#include <math.h>
 
 using namespace task_recorder;
 
@@ -59,7 +59,7 @@ int main(int argc, char** argv)
   ros::WallDuration(20).sleep();
   //ros::Time end_time = joint_states_recorder.getStartRecordingResponse().start_time + ros::Duration (4.0);
   ros::Time end_time = start_time + ros::Duration(15);
-  const int num_samples = 200;
+  const int num_samples = std::floor((end_time - start_time).toSec()) * 25;
   ROS_INFO("Stopping recording...");
 
   joint_states_recorder.stopRecording(start_time, end_time, num_samples);

@@ -735,6 +735,9 @@ bool RobotInfo::initialize()
   ROS_VERIFY(usc_utilities::read(robot_info_node_handle, "right_endeffector_position_variable_names", right_endeffector_position_names_));
   ROS_VERIFY(usc_utilities::read(robot_info_node_handle, "left_endeffector_position_variable_names", left_endeffector_position_names_));
 
+  ROS_VERIFY(usc_utilities::read(robot_info_node_handle, "robot_part_right_hand", right_hand_name_));
+  ROS_VERIFY(usc_utilities::read(robot_info_node_handle, "robot_part_left_hand", left_hand_name_));
+
   right_endeffector_orientation_names_.clear();
   left_endeffector_orientation_names_.clear();
   ROS_VERIFY(usc_utilities::read(robot_info_node_handle, "right_endeffector_orientation_variable_names", right_endeffector_orientation_names_));
@@ -1117,6 +1120,25 @@ std::string RobotInfo::getEndeffectorName(const int endeffector_id)
     ROS_ERROR("RobotInfo: Invalid endeffector_id provided >%i<. Cannot return endeffector name.", endeffector_id);
   }
   return endeffector_name;
+}
+
+const std::vector<std::string> RobotInfo::getEndeffectorNames(const int endeffector_id)
+{
+  checkInitialized();
+  std::vector<std::string> endeffector_names;
+  if (RobotInfo::isRightHand(endeffector_id))
+  {
+    endeffector_names = RobotInfo::right_endeffector_names_;
+  }
+  else if (RobotInfo::isLeftHand(endeffector_id))
+  {
+    endeffector_names = RobotInfo::left_endeffector_names_;
+  }
+  else
+  {
+    ROS_ERROR("RobotInfo: Invalid endeffector_id provided >%i<. Cannot return endeffector name.", endeffector_id);
+  }
+  return endeffector_names;
 }
 
 std::string RobotInfo::getEndeffectorNameLower(const int endeffector_id)
