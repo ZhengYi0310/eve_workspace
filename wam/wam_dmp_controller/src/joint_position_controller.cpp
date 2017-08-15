@@ -35,7 +35,7 @@ namespace wam_dmp_controller
         // Load PID Controller using gains set on parameter server 
         if (!pid_controller_.init(ros::NodeHandle(n, "pid")))
         {
-            ROS_ERROR("Could not initialize a pid controller.");
+            ROS_ERROR("Could not initialize a pid controller for joint %s.", n.getNamespace().c_str());
             initialized_ = false;
             return initialized_;
         }

@@ -1,15 +1,15 @@
 cartesian_pose_twist_gains: &cartesian_pose_twist_gains
   ff_trans: 0.0
   fb_trans:
-    p: 1600.0
+    p: 1600
     i: 0.0
-    d: 40.0
+    d: 40
     i_clamp: 4.0
   ff_rot: 0.0
   fb_rot:
-    p: 300.0
+    p: 300
     i: 0.0
-    d: 20.0
+    d: 20
     i_clamp: 4.0
     
 nullspace_gains: &nullspace_gains

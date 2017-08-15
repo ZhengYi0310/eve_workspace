@@ -239,7 +239,7 @@ namespace wam_dmp_controller
             }
         }
 
-        visualize();
+        //visualize();
         cart_controller_->update(time, period);
     }        
 

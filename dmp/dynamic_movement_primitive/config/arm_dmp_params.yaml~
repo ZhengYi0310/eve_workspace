@@ -418,7 +418,7 @@ cartesian_space_dmp:
         ICRA2009:
           k_gain: 200.0
         NC2010:
-          k_gain: 10.0
+          k_gain: 200.0
       -
         name: "R_HAND_Y"
         ICRA2009:

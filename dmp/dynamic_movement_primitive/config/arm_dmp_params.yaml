@@ -191,43 +191,43 @@ joint_space_dmp:
         ICRA2009:
           k_gain: 200.0
         NC2010:
-          k_gain: 10.0
+          k_gain: 200.0
       -
         name: "left_wam/shoulder_pitch_joint"
         ICRA2009:
           k_gain: 200.0
         NC2010:
-          k_gain: 10.0
+          k_gain: 200.0
       -
         name: "left_wam/shoulder_yaw_joint"
         ICRA2009:
           k_gain: 200.0
         NC2010:
-          k_gain: 10.0
+          k_gain: 200.0
       -
         name: "left_wam/elbow_pitch_joint"
         ICRA2009:
           k_gain: 200.0
         NC2010:
-          k_gain: 10.0
+          k_gain: 200.0
       -
         name: "left_wam/wrist_yaw_joint"
         ICRA2009:
           k_gain: 200.0
         NC2010:
-          k_gain: 10.0
+          k_gain: 200.0
       -
         name: "left_wam/wrist_pitch_joint"
         ICRA2009:
           k_gain: 200.0
         NC2010:
-          k_gain: 10.0
+          k_gain: 200.0
       -
         name: "left_wam/palm_yaw_joint"
         ICRA2009:
           k_gain: 200.0
         NC2010:
-          k_gain: 10.0
+          k_gain: 200.0
 
   LEFT_ARM:
     # transformation system parameters
@@ -418,7 +418,7 @@ cartesian_space_dmp:
         ICRA2009:
           k_gain: 200.0
         NC2010:
-          k_gain: 10.0
+          k_gain: 200.0
       -
         name: "R_HAND_Y"
         ICRA2009:
@@ -518,19 +518,19 @@ cartesian_space_dmp:
         ICRA2009:
           k_gain: 200.0
         NC2010:
-          k_gain: 10.0
+          k_gain: 200.0
       -
         name: "l_arm_y"
         ICRA2009:
           k_gain: 200.0
         NC2010:
-          k_gain: 10.0
+          k_gain: 200.0
       -
         name: "l_arm_z"
         ICRA2009:
           k_gain: 200.0
         NC2010:
-          k_gain: 10.0
+          k_gain: 200.0
 
     orientation_transformation_system:
       -
@@ -538,24 +538,24 @@ cartesian_space_dmp:
         ICRA2009:
           k_gain: 200.0
         NC2010:
-          k_gain: 10.0
+          k_gain: 200.0
       -
         name: "l_arm_qx"
         ICRA2009:
           k_gain: 200.0
         NC2010:
-          k_gain: 10.0
+          k_gain: 200.0
       -
         name: "l_arm_qy"
         ICRA2009:
           k_gain: 200.0
         NC2010:
-          k_gain: 10.0
+          k_gain: 200.0
       -
         name: "l_arm_qz"
         ICRA2009:
           k_gain: 200.0
         NC2010:
-          k_gain: 10.0
+          k_gain: 200.0
 
 

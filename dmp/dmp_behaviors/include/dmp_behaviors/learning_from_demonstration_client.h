@@ -115,7 +115,7 @@ namespace dmp_behaviors
 
         // read the bag file and recreate the trajectory.
         dmp_lib::Trajectory trajectory;
-        //dmp_utilities::TrajectoryUtilities::createPoseTrajectoryFromDataSampleBagFile(trajectory, abs_bag_file_name, joint_variable_names, robot_info::RobotInfo::DEFAULT_SAMPLING_FREQUENCY);
+        //dmp_utilities::TrajectoryUtilities::createJointStateTrajectoryFromDataSamples(trajectory, joint_variable_names, abs_bag_file_name, robot_info::RobotInfo::DEFAULT_SAMPLING_FREQUENCY);
         dmp_utilities::TrajectoryUtilities::createPoseTrajectoryFromDataSampleBagFile(trajectory, abs_bag_file_name, endeffector_names, robot_info::RobotInfo::DEFAULT_SAMPLING_FREQUENCY);
         ROS_INFO("trajectory successfully created!");
         
@@ -128,6 +128,7 @@ namespace dmp_behaviors
         // learn a dmp and write it to disc
         dmp_lib::NC2010DMPPtr nc2010_dmp;
         DynamicMovementPrimitiveLearner<dmp::NC2010DMP>::learnCartesianSpaceDMPFromDataSamples(nc2010_dmp, node_handle_tmp, abs_bag_file_name, robot_part_names);
+        //DynamicMovementPrimitiveLearner<dmp::NC2010DMP>::learnJointSpaceDMPFromDataSampleMsgs(nc2010_dmp, node_handle_tmp, abs_bag_file_name, robot_part_names);
         std::string dmp_bag_file_name = "cartesian_space_dmp.bag";
         std::string abs_dmp_bag_file_name = package_path + "/demonstrations/" + dmp_bag_file_name;
         dmp::NC2010DynamicMovementPrimitive::writeToDisc(nc2010_dmp, abs_dmp_bag_file_name);
