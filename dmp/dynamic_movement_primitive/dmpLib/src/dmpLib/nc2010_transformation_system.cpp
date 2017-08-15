@@ -140,7 +140,7 @@ namespace dmp_lib
         {
             case NORMAL:
             {
-				Logger::logPrintf(">>>>>Using normal integration method to fit the model!<<<<<", Logger::INFO);
+				//Logger::logPrintf(">>>>>Using normal integration method to fit the model!<<<<<", Logger::INFO);
                 for (int i = 0; i < getNumDimensions(); ++i)
                 {
                     // set target state
@@ -172,7 +172,7 @@ namespace dmp_lib
     
             case QUATERNION:
             {
-				Logger::logPrintf(">>>>>Using quaternion integration method to fit the model!<<<<<", Logger::INFO);
+				//Logger::logPrintf(">>>>>Using quaternion integration method to fit the model!<<<<<", Logger::INFO);
                 if (target_states.size() != 4)
                 {
                     Logger::logPrintf("Cannot integrate and fit quaternion with only >%i< target states.", Logger::ERROR, (int)target_states.size());
@@ -294,7 +294,7 @@ namespace dmp_lib
         {
             case NORMAL:
             {
-				Logger::logPrintf(">>>>>Roll out DMP model with NORMAL integration method!<<<<<");
+				//Logger::logPrintf(">>>>>Roll out DMP model with NORMAL integration method!<<<<<");
                 double dt = dmp_time.getDeltaT() / static_cast<double> (num_iterations);
                 for (int i = 0; i < getNumDimensions(); ++i)
                 {
@@ -330,7 +330,7 @@ namespace dmp_lib
     
             case QUATERNION:
             {
-				Logger::logPrintf(">>>>>Roll out DMP model with QUATERNION integration method!<<<<<");
+				//Logger::logPrintf(">>>>>Roll out DMP model with QUATERNION integration method!<<<<<");
                 double dt = dmp_time.getDeltaT() / static_cast<double> (num_iterations);
                 for (int n = 0; n < num_iterations; ++n)
                 {

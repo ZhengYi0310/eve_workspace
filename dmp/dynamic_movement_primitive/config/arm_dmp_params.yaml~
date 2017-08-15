@@ -232,7 +232,7 @@ joint_space_dmp:
   LEFT_ARM:
     # transformation system parameters
     transformation_systems_parameters:
-      -LEFT_ARM
+      -
         name: "L_SFE"
         ICRA2009:
           k_gain: 200.0
@@ -503,6 +503,56 @@ cartesian_space_dmp:
           k_gain: 10.0
       -
         name: "L_HAND_QZ"
+        ICRA2009:
+          k_gain: 200.0
+        NC2010:
+          k_gain: 10.0
+
+  left_arm:
+    end_link_name: L_PALM
+  
+    # transformation system parameters
+    transformation_systems_parameters:
+      -
+        name: "l_arm_x"
+        ICRA2009:
+          k_gain: 200.0
+        NC2010:
+          k_gain: 10.0
+      -
+        name: "l_arm_y"
+        ICRA2009:
+          k_gain: 200.0
+        NC2010:
+          k_gain: 10.0
+      -
+        name: "l_arm_z"
+        ICRA2009:
+          k_gain: 200.0
+        NC2010:
+          k_gain: 10.0
+
+    orientation_transformation_system:
+      -
+        name: "l_arm_qw"
+        ICRA2009:
+          k_gain: 200.0
+        NC2010:
+          k_gain: 10.0
+      -
+        name: "l_arm_qx"
+        ICRA2009:
+          k_gain: 200.0
+        NC2010:
+          k_gain: 10.0
+      -
+        name: "l_arm_qy"
+        ICRA2009:
+          k_gain: 200.0
+        NC2010:
+          k_gain: 10.0
+      -
+        name: "l_arm_qz"
         ICRA2009:
           k_gain: 200.0
         NC2010:

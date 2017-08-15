@@ -124,7 +124,7 @@ namespace dmp_behaviors
         std::string abs_demo_file_name_joint_states = package_path + "/demonstrations/" + demo_joint_file_name;
         trajectory.writeToCLMCFile(abs_demo_file_name_joint_states);
 
-        /*
+        
         // learn a dmp and write it to disc
         dmp_lib::NC2010DMPPtr nc2010_dmp;
         DynamicMovementPrimitiveLearner<dmp::NC2010DMP>::learnCartesianSpaceDMPFromDataSamples(nc2010_dmp, node_handle_tmp, abs_bag_file_name, robot_part_names);
@@ -139,7 +139,7 @@ namespace dmp_behaviors
         nc2010_dmp->getInitialDuration(initial_duration);
 
         dmp_lib::Trajectory rollout;
-        */
+        
         /*
         // change the goal 
         VectorXd new_goal = VectorXd::Zero(nc2010_dmp->getNumDimensions());
@@ -152,7 +152,7 @@ namespace dmp_behaviors
         nc2010_dmp->changeGoal(new_goal);
         //
         */
-        /*
+        
         nc2010_dmp->propagateFull(rollout, initial_duration, trajectory.getNumContainedSamples());
         std::string rollout_joint_file_name = "rollout_joint_reproduction.clmc";
         std::string abs_rollout_joint_file_name = package_path + "/demonstrations/" + rollout_joint_file_name;
@@ -219,7 +219,7 @@ namespace dmp_behaviors
         }
 
         std::cout << abs_bag_file_name << std::endl;
-        */    
+        
         ros::shutdown();
     
         
