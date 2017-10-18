@@ -27,7 +27,7 @@
       bhand_left:
         bus: "rtcan_left"
         type: "hand"
-        tactile: false
+        tactile: true
   </rosparam>
 
   <!-- Launch several pieces of barrett hardware -->
@@ -74,7 +74,7 @@
 
   <node name="default_controller_spawner"
     pkg="controller_manager" type="spawner" output="screen"
-    args="barrett/joint_state_controller barrett/robot_states_publisher barrett/left_wam/base_yaw_joint"/>
+    args="barrett/joint_state_controller barrett/robot_states_publisher"/>
 
 
 </launch>

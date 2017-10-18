@@ -347,8 +347,13 @@ namespace barrett_hw
             hand_device->interface->initialize();
             hand_device->interface->update();
 
-            //ROS_INFO("Closing the BarrenttHand Grasp");
+            ROS_INFO("Closing the BarrenttHand Grasp");
+            usleep(500000);
             hand_device->interface->close(barrett::Hand::GRASP, false);
+            //usleep(500000);
+            //hand_device->interface->close(barrett::Hand::F1, false);
+            //usleep(500000);
+            //hand_device->interface->close(barrett::Hand::F3, false);
 
             wam_device->hand_device = hand_device;
         }

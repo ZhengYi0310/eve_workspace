@@ -43,8 +43,8 @@ int main(int argc, char** argv)
   //TaskRecorderClient<geometry_msgs::PoseStamped> pose_recorder(node_handle);
   //pose_recorder.initialize("/pose_r");
 
-  //TaskRecorderClient<biotac_sensors::BioTacHand> biotac_state_recorder(node_handle);
-  //biotac_state_recorder.initialize("/biotac_states");
+  TaskRecorderClient<biotac_sensors::BioTacHand> biotac_state_recorder(node_handle);
+  biotac_state_recorder.initialize("/biotac_sensors");
   
   ros::WallDuration(1.0).sleep();
 
@@ -53,12 +53,12 @@ int main(int argc, char** argv)
   //pose_recorder.startRecording();
   //audio_recorder.startRecording();
   arm_cartesian_state_recorder.startRecording();
-  //biotac_state_recorder.startRecording();
+  biotac_state_recorder.startRecording();
 
-  ros::Time start_time = arm_cartesian_state_recorder.getStartRecordingResponse().start_time;
-  ros::WallDuration(20).sleep();
+  ros::Time start_time = biotac_state_recorder.getStartRecordingResponse().start_time;
+  ros::WallDuration(5).sleep();
   //ros::Time end_time = joint_states_recorder.getStartRecordingResponse().start_time + ros::Duration (4.0);
-  ros::Time end_time = start_time + ros::Duration(15);
+  ros::Time end_time = start_time + ros::Duration(4);
   const int num_samples = std::floor((end_time - start_time).toSec()) * 25;
   ROS_INFO("Stopping recording...");
 
@@ -66,6 +66,6 @@ int main(int argc, char** argv)
   //pose_recorder.stopRecording(start_time, end_time, num_samples);
   //audio_recorder.stopRecording(start_time, end_time, num_samples);
   arm_cartesian_state_recorder.stopRecording(start_time, end_time, num_samples);
-  //biotac_state_recorder.stopRecording(start_time, end_time, num_samples);
+  biotac_state_recorder.stopRecording(start_time, end_time, num_samples);
   return 0;
 }

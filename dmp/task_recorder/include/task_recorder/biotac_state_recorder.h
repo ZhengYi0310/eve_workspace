@@ -43,7 +43,7 @@ namespace task_recorder
              */
             int getNumSignals() const 
             {
-                return static_cast<int>(3 * (PDC_INDEX + TAC_INDEX + PDC_INDEX + PAC_INDEX + ELEC_INDEX));
+                return static_cast<int>(1 * (TAC_INDEX + PDC_INDEX + PAC_INDEX + ELEC_INDEX) + 2);
             }
             
             /*!
@@ -69,7 +69,7 @@ namespace task_recorder
                 TDC_INDEX = 0, TAC_INDEX, PDC_INDEX, PAC_INDEX = 22, ELEC_INDEX = 19
             };
 
-            static const unsigned int TOTAL_INDEX = PDC_INDEX + PAC_INDEX + ELEC_INDEX + 1;
+            static const unsigned int TOTAL_INDEX = TAC_INDEX + PDC_INDEX + PAC_INDEX + ELEC_INDEX;
     };
 }
 #endif

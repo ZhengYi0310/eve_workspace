@@ -1,16 +1,16 @@
 cartesian_pose_twist_gains: &cartesian_pose_twist_gains
   ff_trans: 0.0
   fb_trans:
-    p: 80.0
+    p: 80
     i: 0.0
-    d: 1.5
-    i_clamp: 4.0
+    d: 10
+    i_clamp: 0.0
   ff_rot: 0.0
   fb_rot:
-    p: 8.0
+    p: 8
     i: 0.0
-    d: 0.12
-    i_clamp: 4.0
+    d: 2
+    i_clamp: 0.0
     
 nullspace_gains: &nullspace_gains
   nullspace_controller_names: fb_nullspace_base_yaw fb_nullspace_shoulder_pitch fb_nullspace_shoulder_yaw fb_nullspace_elbow_pitch fb_nullspace_wrist_yaw fb_nullspace_wrist_pitch fb_nullspace_palm_yaw

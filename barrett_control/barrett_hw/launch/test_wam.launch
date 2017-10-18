@@ -27,7 +27,7 @@
       bhand_left:
         bus: "rtcan_left"
         type: "hand"
-        tactile: false
+        tactile: true
   </rosparam>
 
   <!-- Launch several pieces of barrett hardware -->
@@ -66,7 +66,7 @@
     robot_states_publisher:
       type: barrett_hw/RobotStatesPublisher
       publish_rate: 50
-      tactile: false
+      tactile: true
     #left_wam/base_yaw_joint:
     #  type: wam_dmp_controller/JointPositionController
 

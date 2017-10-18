@@ -130,6 +130,7 @@ namespace dmp_behaviors
         DynamicMovementPrimitiveLearner<dmp::NC2010DMP>::learnCartesianSpaceDMPFromDataSamples(nc2010_dmp, node_handle_tmp, abs_bag_file_name, robot_part_names);
         //DynamicMovementPrimitiveLearner<dmp::NC2010DMP>::learnJointSpaceDMPFromDataSampleMsgs(nc2010_dmp, node_handle_tmp, abs_bag_file_name, robot_part_names);
         std::string dmp_bag_file_name = "cartesian_space_dmp.bag";
+		//std::string dmp_bag_file_name = "joint_space_dmp.bag";
         std::string abs_dmp_bag_file_name = package_path + "/demonstrations/" + dmp_bag_file_name;
         dmp::NC2010DynamicMovementPrimitive::writeToDisc(nc2010_dmp, abs_dmp_bag_file_name);
         

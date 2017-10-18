@@ -303,6 +303,7 @@ namespace wam_dmp_controller
 
             // Set the desired rest posture to current 
             rest_posture_joint_configuration_(i) = kdl_current_joint_positions_(i);
+            //ROS_INFO("joint position %i: %f", (int)i, kdl_current_joint_positions_(i));
         }
 
         // Set the desired cartesian pose to current value 

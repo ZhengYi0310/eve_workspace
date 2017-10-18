@@ -384,6 +384,7 @@ namespace task_recorder
         num_signals_ = getNumSignals();
         data_sample_.data.resize(num_signals_);
         data_sample_.names.resize(num_signals_);
+        ROS_INFO("number of signals %i", num_signals_);
         if(recorder_io_.node_handle_.hasParam(full_topic_name))
         {
             is_filtered_ = true;
@@ -393,6 +394,7 @@ namespace task_recorder
             std::string parameter_name = recorder_io_.node_handle_.getNamespace() + std::string("/") + full_topic_name + std::string("/Filter");
             ROS_VERIFY(((filters::MultiChannelFilterBase<double>&)filter_).configure(num_signals_, parameter_name, recorder_io_.node_handle_));
         }
+        //ROS_INFO("data_sample resized!");
 
         start_recording_service_server_ = recorder_io_.node_handle_.advertiseService(std::string("start_recording_") + task_recorder_specification.service_prefix + full_topic_name, &TaskRecorder<MessageType>::startRecording, this);
     
@@ -401,8 +403,9 @@ namespace task_recorder
         
         //******************
         message_subscriber_ = recorder_io_.node_handle_.subscribe(recorder_io_.topic_name_, MESSAGE_SUBSCRIBER_BUFFER_SIZE, &TaskRecorder<MessageType>::recordMessagesCallback, this);
+        //ROS_INFO("Message subscriber constructed!");
         //******************
-        
+         
         task_recorder::DataSample default_data_sample;
         default_data_sample.names = getNames();
         addVariablePrefix(default_data_sample.names);
@@ -411,6 +414,8 @@ namespace task_recorder
         ROS_VERIFY(usc_utilities::write(private_node_handle, "variable_names", default_data_sample.names));
         default_data_sample.data.resize(default_data_sample.names.size(), 0.0);
         message_buffer_.reset(new task_recorder_utilities::MessageRingBuffer(default_data_sample));
+        
+        //ROS_INFO("Task recorder initialized!");
         
         return (initialized_ = true);
     }
@@ -585,7 +590,8 @@ namespace task_recorder
             response.return_code = task_recorder::StopRecording::Response::SERVICE_CALL_FAILED;
             return true;
         }
-
+        
+        
         if (recorder_io_.write_out_resampled_data_)
         {
             //boost::thread(boost::bind(&TaskRecorderIO<task_recorder::DataSample>::writeResampledData, &recorder_io_));
@@ -594,6 +600,7 @@ namespace task_recorder
             // wait for the sampled data writing thread to complete 
             write_sampled_data_thread.join();
         }
+        
 
     // if(recorder_io_.write_out_statistics_)
     // {
@@ -698,11 +705,12 @@ namespace task_recorder
         }
 
         ROS_INFO("Resampling >%i< messages to >%i< messages for topic >%s<.", (int)recorder_io_.messages_.size(), num_samples, recorder_io_.topic_name_.c_str());
-
+        
+        
         // then resample
         ROS_VERIFY(resample(recorder_io_.messages_, start_time, end_time, num_samples, message_names, filtered_and_cropped_messages));
         ROS_ASSERT(static_cast<int>(filtered_and_cropped_messages.size()) == num_samples);
-
+        
         recorder_io_.messages_ = filtered_and_cropped_messages;
 
         return true;
@@ -721,7 +729,7 @@ namespace task_recorder
         for (int i = 0; i < (int)messages.size(); ++i)
         {
             ROS_ASSERT(!messages[i].names.empty());
-            ROS_ASSERT(messages[i].names.size() == messages[i].data.size());
+            ROS_ASSERT_MSG(messages[i].names.size() == messages[i].data.size(), "%lu != %lu", messages[i].names.size(), messages[i].data.size());
         }
         ROS_ASSERT(num_samples > 1);
 
