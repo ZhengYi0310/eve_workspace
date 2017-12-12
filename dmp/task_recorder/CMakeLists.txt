@@ -25,6 +25,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 find_package(catkin REQUIRED COMPONENTS 
   roscpp
   rosbag
+  rospy
   tf
   filters
   message_filters

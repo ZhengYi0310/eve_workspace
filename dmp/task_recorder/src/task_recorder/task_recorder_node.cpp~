@@ -23,18 +23,18 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "TaskRecorder");
     ros::NodeHandle node_handle("~");
 
-    //task_recorder::JointStatesRecorder joint_states_recorder(node_handle);
-    //ROS_VERIFY(joint_states_recorder.initialize());
+    task_recorder::JointStatesRecorder joint_states_recorder(node_handle);
+    ROS_VERIFY(joint_states_recorder.initialize());
 
     //task_recorder::PoseRecorder pose_recorder(node_handle);
     //std::string pose_topic_name = std::string("/pose_r");
     //ROS_VERIFY(pose_recorder.initialize(pose_topic_name));
 
-    //task_recorder::CartesianStateRecorder arm_cartesian_state_recorder(node_handle);
-    //ROS_VERIFY(arm_cartesian_state_recorder.initialize());
+    task_recorder::CartesianStateRecorder arm_cartesian_state_recorder(node_handle);
+    ROS_VERIFY(arm_cartesian_state_recorder.initialize());
 
-    task_recorder::BioTacStateRecorder biotac_state_recorder(node_handle);
-    ROS_VERIFY(biotac_state_recorder.initialize());
+    //task_recorder::BioTacStateRecorder biotac_state_recorder(node_handle);
+    //ROS_VERIFY(biotac_state_recorder.initialize());
 
     //task_recorder::TFRecorder tf_recorder(node_handle);
     //ROS_VERIFY(tf_recorder.initialize());

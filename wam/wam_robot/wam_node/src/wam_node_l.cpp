@@ -1444,7 +1444,7 @@ template<size_t DOF>
         {
             wam_joint_state.position[i] = jp[i];
             wam_joint_state.velocity[i] = jv[i];
-            wam_joint_state.effort[i] = jt[i];
+            wam_joint_state.effort[i] = 0.0;
         }
         wam_joint_state.header.stamp = ros::Time::now();
         wam_joint_state_pub.publish(wam_joint_state);

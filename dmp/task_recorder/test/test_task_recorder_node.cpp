@@ -56,9 +56,9 @@ int main(int argc, char** argv)
   biotac_state_recorder.startRecording();
 
   ros::Time start_time = biotac_state_recorder.getStartRecordingResponse().start_time;
-  ros::WallDuration(5).sleep();
+  ros::WallDuration(12).sleep();
   //ros::Time end_time = joint_states_recorder.getStartRecordingResponse().start_time + ros::Duration (4.0);
-  ros::Time end_time = start_time + ros::Duration(4);
+  ros::Time end_time = start_time + ros::Duration(10);
   const int num_samples = std::floor((end_time - start_time).toSec()) * 25;
   ROS_INFO("Stopping recording...");
 
