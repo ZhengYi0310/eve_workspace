@@ -43,4 +43,4 @@ namespace ops_wbc_kalman_filter
     };
     using KalmanFilterPtr = std::make_shared<KalmanFilter>;
 }
-#endif __OPS_WBC_KALMAN_FILTER_KALMAN_FILTER_HPP
+#endif // __OPS_WBC_KALMAN_FILTER_KALMAN_FILTER_HPP

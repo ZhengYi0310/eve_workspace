@@ -30,7 +30,7 @@ namespace ops_wbc_kalman_filter
             }
         
         private:
-            void checkMatrixSize(const Eigen::MatrixXd& ctrl_data, const Eigen::MatrixXd& msr_data)
+            void checkMatrixSize(const Eigen::MatrixXd& ctrl_data, const Eigen::MatrixXd& msr_data);
             
             NormalDistributionPtr state_;
             NormalDistributionPtr predicted_state_;
@@ -41,6 +41,6 @@ namespace ops_wbc_kalman_filter
             Eigen::MatrixXd B_;
             Eigen::MatrixXd C_;
     };
-    using KalmanFilterPtr = std::make_shared<KalmanFilter>;
+    using KalmanFilterPtr = std::shared_ptr<KalmanFilter>;
 }
 #endif // __OPS_WBC_KALMAN_FILTER_KALMAN_FILTER_HPP
