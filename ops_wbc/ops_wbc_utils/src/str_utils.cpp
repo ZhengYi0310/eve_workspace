@@ -38,3 +38,101 @@ bool StrUtils::have(const std::string& str, const std::vector<char>& chs)
 
     return true;
 }
+
+bool StrUtils::have(const std::string& str, const std::string& word)
+{
+    return boost::contains(str, word);
+}
+
+bool StrUtils::isAlphabet(const std::string& str)
+{
+    uint32_t length = str.length();
+    
+    if (length == 0)
+        return false;
+
+    for (uint32_t i = 0; i < length; i++)
+    {
+        if (!std::isalpha(str[i]))
+            return false;
+    }
+
+    return true;
+}
+
+bool StrUtils::isIPAddress(const std::string& str)
+{
+    std::string temp = str;
+    StrUtils::removeSpace(temp);
+    std::vector<std::string> words;
+
+    StrUtils::separate(temp, words, ".:");
+
+    if (words.size() != 4)
+        return false;
+
+    for (int32_t i = 0; i < words.size(); i++)
+    {
+        for (int32_t j = 0; j < words[i].length(); j++)
+        {
+            if (words[i][j] < '0' || words[i][j] > '9')
+                return false;
+        }
+
+        if (std::atoi(words[i].c_str()) < 0 || std::atoi(words[i].c_str()) > 255)
+            return false;
+    }
+    
+    return true;
+}
+
+void StrUtils::removeSpace(std::string& str)
+{
+    size_t pos;
+    while ((pos = str.find_first_of(" 　\t")) != std::string::npos)
+    {
+        str.erase(pos, 1);
+    }
+}
+
+void StrUtils::removeIndent(std::string& str)
+{
+    for (uint32_t i = 0; i < str.length(); i++)
+    {
+        if (str[i] == ' ' || str[i] == '\t')
+        {
+            str.erase(i, 1);
+            i--;
+        }
+    }
+
+    return;
+}
+
+void StrUtils::remove(std::string& str, char ch)
+{
+    for (uint32_t i = 0; i < str.length(); i++)
+    {
+        if (str[i] == ch)
+        {
+            str.erase(i , 1);
+            i--;
+        }
+    }
+}
+
+void StrUtils::separate(const std::string& str, std::vector<std::string>& words, const std::string& delimiters)
+{
+    typedef boost::char_separator<char> char_separator;
+    typedef boost::tokenizer<char_separator> tokenizer;
+
+    char_separator sep(delimiters.c_str(), "", boost::keep_empty_tokens);
+    tokenizer tokens(str, sep);
+
+    words.clear();
+    for (auto it = std::begin(tokens); it != std::end(tokens); it++)
+    {
+        if (*it != "")
+            words.push_back(*it);
+    }
+}

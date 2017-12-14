@@ -6,7 +6,7 @@
 #include <vector>
 #include <limits>
 #include <Eigen/Dense>
-#include "utils/str_utils.hpp"
+#include "ops_wbc_utils/str_utils.hpp"
 
 namespace ops_wbc_utils
 {

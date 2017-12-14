@@ -56,7 +56,7 @@ namespace ops_wbc_utils
             static bool convertToVector(const std::string& str, std::vector<T>& vec, const std::string& delimiters)
             {
                 std::vector<std::string> words;
-                StrUtils::separate(str, words, delimiters);
+                StrUtils::seperate(str, words, delimiters);
 
                 if (words.size() == 0)
                     return false;
